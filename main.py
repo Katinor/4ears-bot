@@ -1093,7 +1093,7 @@ async def admin_system(msg,user):
 	re_target = re.search('^4ears admin stats$',msg.content)
 	if re_target:
 		now = log_append(msg.channel.id, str(msg.content), "adm","stats")
-		if str(user.user_id) in admin:
+		if str(user.user_id) in admin or str(user.user_id) in owner:
 			fp = open("quadra_server_list.txt","w")
 			for i in bot.servers:
 				fp.write(i.name+"\n")

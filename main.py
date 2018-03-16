@@ -134,6 +134,7 @@ async def dialog_how(msg,user):
 	now = log_append(chat_id, str(msg.content), "d_how",0)
 	target = re.search('^사잽아 ((?:(?! 어때).)*) 어때', str(msg.content))
 	target = target.groups()
+	user_list = msg.mentions
 	
 	if target[0] == "나":
 		level_stat = user.level
@@ -167,6 +168,40 @@ async def dialog_how(msg,user):
 		if level_stat == 100: em.add_field(name="누적 경험치",value=str(user.exp),inline=False)
 		else : em.add_field(name="누적 경험치",value=str(user.exp)+" / "+str(quadra_user_module.REQ_EXP[level_stat]),inline=False)
 		await bot.send_message(msg.channel,mention_user(user.user_id)+",\n"+user.love_text(),embed = em)
+	
+	elif len(user_list) == 1 and user_list :
+		trg_user = quadra_user(user_list[0].id)
+		level_stat = trg_user.level
+		cash_stat = trg_user.cash
+		if level_stat == quadra_user_module.MAX_LEVEL:
+			req_exp = quadra_user_module.REQ_EXP[level_stat-1] - quadra_user_module.REQ_EXP[level_stat-2]
+			cur_exp = trg_user.exp - quadra_user_module.REQ_EXP[level_stat-1]
+		elif level_stat != 0 :
+			req_exp = quadra_user_module.REQ_EXP[level_stat] - quadra_user_module.REQ_EXP[level_stat-1]
+			cur_exp = trg_user.exp - quadra_user_module.REQ_EXP[level_stat-1]
+		else :
+			req_exp = quadra_user_module.REQ_EXP[level_stat]
+			cur_exp = trg_user.exp
+		if level_stat != quadra_user_module.MAX_LEVEL:
+			exp_bar = ""
+			exp_perc = (cur_exp / req_exp)
+			exp_perc *= 100
+			exp_perc_str = "(%3d %%)"%(exp_perc)
+			for i in range(0,10,1):
+				if exp_perc >= 10:
+					exp_bar += "■"
+					exp_perc -= 10
+				else: exp_bar += "□"
+			em = discord.Embed(title=user_list[0].name+"#"+str(user_list[0].discriminator)+" 의 프로필!",description="Lv."+str(level_stat)+" ( "+str(cur_exp)+" / "+str(req_exp)+" )\n"+exp_bar+exp_perc_str, colour=discord.Colour.blue())
+		else : 
+			em = discord.Embed(title=user_list[0].name+"#"+str(user_list[0].discriminator)+" 의 프로필!",description="Lv."+str(level_stat)+" ( "+str(cur_exp)+" )\n■■■■■■■■■■(최대레벨)", colour=discord.Colour.blue())
+		ifuser_list[0].avatar_url:	em.set_thumbnail(url=user_list[0].avatar_url)
+		else : em.set_thumbnail(url="https://i.imgur.com/pg7K8cQ.png")
+		em.add_field(name="돈", value=str(cash_stat), inline=True)
+		em.add_field(name="호감도", value=trg_user.love_short(), inline=True)
+		if level_stat == 100: em.add_field(name="누적 경험치",value=str(trg_user.exp),inline=False)
+		else : em.add_field(name="누적 경험치",value=str(trg_user.exp)+" / "+str(quadra_user_module.REQ_EXP[level_stat]),inline=False)
+		await bot.send_message(msg.channel,mention_user(trg_user.user_id)+",\n"+trg_user.love_text(),embed = em)
 	elif target[0] in quadra_search_vocab.dis_list: 
 		text=random.choice(quadra_dialog_list.dialog_dis_how)
 		user.mody(love = 2, love_time = True, exp = 5, exp_time = True)

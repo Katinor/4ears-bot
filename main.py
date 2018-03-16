@@ -101,7 +101,7 @@ async def version(msg,user):
 	text+=" * 지원 게임 : 야구게임, 업다운, 로또(판당 1000원)\n"
 	text+="* 사잽아 나 어때\n"
 	text+="* 사잽아 용돈줘"
-	user.mody(love = 1, love_time = True, exp = 1, exp_time = True)
+	user.mody(love = 1, love_time = True, exp = 5, exp_time = True)
 	em = discord.Embed(title="여길 누르면 블로그로 갈 수 있어!",description=text, colour=discord.Colour.blue(), url = "https://blog.4ears.net/%EC%82%AC%EC%9E%BD%EC%9D%B4%EB%B4%87/")
 	em.set_image(url="https://i.imgur.com/VyRXaJw.png")
 	await bot.send_message(msg.channel,mention_user(user.user_id)+" "+"너에게 직접 보낼거야! 확인해봐!")
@@ -113,12 +113,14 @@ async def credit_view(msg,user):
 	text="QuadraEarsBotⓒKatinor, All Right Reserved.\n"
 	text+=" https://blog.4ears.net/%EC%82%AC%EC%9E%BD%EC%9D%B4%EB%B4%87/ \n"
 	text+=" katinor@4ears.net\n\n"
+	text+="You can see source on GitHub. and also use under AGPLv3.0\n"
+	text+=" https://github.com/Katinor/quadra_ears_bot_discord/\n\n"
 	text+="Character Illustrated by 하얀로리, All Right Reserved.\n"
 	text+=" https://www.pixiv.net/member.php?id=5882068 \n\n"
-	user.mody(love = 1, love_time = True, exp = 1, exp_time = True)
+	user.mody(love = 1, love_time = True, exp = 5, exp_time = True)
 	em = discord.Embed(title="여길 누르면 블로그로 갈 수 있어!",description=text, colour=discord.Colour.blue(), url = "https://blog.4ears.net/%EC%82%AC%EC%9E%BD%EC%9D%B4%EB%B4%87/")
 	em.set_image(url="https://i.imgur.com/VyRXaJw.png")
-	await bot.send_message(msg.channel,chat_user+" "+"너에게 직접 보낼거야! 확인해봐!")
+	await bot.send_message(msg.channel,mention_user(user.user_id)+" "+"너에게 직접 보낼거야! 확인해봐!")
 	await bot.send_message(msg.author,embed=em)
 	
 async def lifetime(msg,user):

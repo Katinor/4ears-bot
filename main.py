@@ -1270,7 +1270,7 @@ async def on_message(msg):
 		r = r.text
 		data = json.loads(r)
 		file = data["neko"]
-		embed=discord.Embed(title="  ")
+		embed=discord.Embed(title="\n")
 		embed.set_image(url=file)
 		await bot.send_message(msg.channel, embed=embed)
 

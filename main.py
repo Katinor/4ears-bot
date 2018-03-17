@@ -1,6 +1,6 @@
 import re
 import requests
-import telegram
+import json	
 import random
 import time
 import os

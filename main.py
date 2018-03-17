@@ -1243,6 +1243,8 @@ async def admin_system(msg,user):
 			now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 가르쳐 줄수 없어!")
 
+
+
 @bot.event
 async def on_ready():
 	global admin
@@ -1263,5 +1265,15 @@ async def on_message(msg):
 		await general_system(msg,said_user)
 	elif msg.author.bot == False :
 		said_user.mody(exp = 1, exp_time = True)
+	if msg.content.startswith("4ears neko") or msg.content.startswith("사잽아 네코"):
+		r = requests.get("https://nekos.life/api/neko")
+		r = r.text
+		data = json.loads(r)
+		file = data["neko"]
+		embed=discord.Embed(title="  ")
+		embed.set_image(url=file)
+		await bot.send_message(msg.channel, embed=embed)
+
+
 
 bot.run(bot_token)

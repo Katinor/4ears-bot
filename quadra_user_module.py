@@ -72,7 +72,7 @@ class quadra_user:
 		for i in range(0,len(target),1):
 			if i < len(target)-1:target[i] = (target[i].split('\n'))[0]
 			if i == 3 or i == 5: target[i] = float(target[i])
-			else: target[i] = int(target[i])
+			else: target[i] = int(float(target[i]))
 		self.cash = target[0]
 		self.cash_time = target[1]
 		self.love = target[2]

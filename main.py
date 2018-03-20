@@ -784,7 +784,23 @@ async def neko_search(msg,user):
 	embed.set_image(url=file)
 	user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 	await bot.send_message(msg.channel, embed=embed)
-	
+
+async def neko_lewd_search(msg,user):
+	now = log_append(msg.channel.id, str(msg.content), "neko",0)
+	if str(user.user_id) in admin or str(user.user_id) in owner :
+		r = requests.get("https://nekos.life/api/v2/img/lewd")
+		r = r.text
+		data = json.loads(r)
+		file = data["url"]
+		embed=discord.Embed(title="")
+		embed.set_image(url=file)
+		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+		await bot.send_message(msg.channel, embed=embed)
+	else:
+		log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
+		now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+		await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 권한이 없어!")
+
 async def general_system(msg,user):
 	re_target = re.search('^사잽아 보고싶어$',msg.content)
 	if re_target:
@@ -836,6 +852,9 @@ async def general_system(msg,user):
 	re_target = re.search('^사잽아 네코',msg.content)
 	if re_target:
 		await neko_search(msg,user)
+	re_target = re.search('^사잽아 야한네코',msg.content)
+	if re_target:
+		await neko_lewd_search(msg,user)
 
 async def admin_system(msg,user):
 	global admin
@@ -1259,8 +1278,6 @@ async def admin_system(msg,user):
 			log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
 			now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 가르쳐 줄수 없어!")
-
-
 
 @bot.event
 async def on_ready():

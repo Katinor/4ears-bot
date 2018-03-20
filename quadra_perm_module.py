@@ -17,7 +17,7 @@ class server_permission:
 		fp = open(profile_name,'r')
 		server_raw = fp.readlines()
 		fp.close()
-		profile_name = "server_nsfwallow/"+str(_server_id)+".txt"
+		profile_name = "server_nsfw/"+str(_server_id)+".txt"
 		if os.path.exists(profile_name) == False:
 			fp = open(profile_name, 'w')
 			fp.write("\n")

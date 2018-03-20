@@ -38,7 +38,6 @@ def mention_user(user_id):
 	return "<@"+str(user_id)+">"
 
 def admin_load():
-	global owner
 	fp = open('quadra_admin.txt','r')
 	target = fp.readlines()
 	for i in range(0,len(target)-1,1):

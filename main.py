@@ -100,7 +100,8 @@ async def version(msg,user):
 	text+="* 사잽아 ~ 해줘/하자/어때/사줘\n * 사잽아 (게임이름) 하자\n"
 	text+=" * 지원 게임 : 야구게임, 업다운, 로또(판당 1000원)\n"
 	text+="* 사잽아 나 어때\n"
-	text+="* 사잽아 용돈줘"
+	text+="* 사잽아 용돈줘\n"
+	text+="* 사잽아 네코 : nekos.life API를 사용해 무작위의 고양이귀 짤을 가져옵니다."
 	user.mody(love = 1, love_time = True, exp = 5, exp_time = True)
 	em = discord.Embed(title="여길 누르면 블로그로 갈 수 있어!",description=text, colour=discord.Colour.blue(), url = "https://blog.4ears.net/%EC%82%AC%EC%9E%BD%EC%9D%B4%EB%B4%87/")
 	em.set_image(url="https://i.imgur.com/VyRXaJw.png")
@@ -117,6 +118,8 @@ async def credit_view(msg,user):
 	text+=" https://github.com/Katinor/quadra_ears_bot_discord/\n\n"
 	text+="Character Illustrated by 하얀로리, All Right Reserved.\n"
 	text+=" https://www.pixiv.net/member.php?id=5882068 \n\n"
+	text+="This bot use nekos.life API.\n"
+	text+=" https://discord.services/api/"
 	user.mody(love = 1, love_time = True, exp = 5, exp_time = True)
 	em = discord.Embed(title="여길 누르면 블로그로 갈 수 있어!",description=text, colour=discord.Colour.blue(), url = "https://blog.4ears.net/%EC%82%AC%EC%9E%BD%EC%9D%B4%EB%B4%87/")
 	em.set_image(url="https://i.imgur.com/VyRXaJw.png")
@@ -770,6 +773,17 @@ async def searching(msg,user):
 			text="이거 찾으려는거 맞지? ( " + quadra_search_list.search_engine["구글"] + url_encode(target[1]) + " )"
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)	
 	await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
+
+async def neko_search(msg,user):
+	now = log_append(msg.channel.id, str(msg.content), "neko",0)
+	r = requests.get("https://nekos.life/api/v2/img/neko")
+	r = r.text
+	data = json.loads(r)
+	file = data["url"]
+	embed=discord.Embed(title="")
+	embed.set_image(url=file)
+	user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+	await bot.send_message(msg.channel, embed=embed)
 	
 async def general_system(msg,user):
 	re_target = re.search('^사잽아 보고싶어$',msg.content)
@@ -819,6 +833,9 @@ async def general_system(msg,user):
 	re_target = re.search('^사잽아 (?:((?:(?!에서).)*)에서 )?((?:(?! (알려줘|찾아줘)).)*) (알려줘|찾아줘)',msg.content)
 	if re_target:
 		await searching(msg,user)
+	re_target = re.search('^사잽아 네코',msg.content)
+	if re_target:
+		await neko_search(msg,user)
 
 async def admin_system(msg,user):
 	global admin
@@ -1265,15 +1282,6 @@ async def on_message(msg):
 		await general_system(msg,said_user)
 	elif msg.author.bot == False :
 		said_user.mody(exp = 1, exp_time = True)
-	if msg.content.startswith("4ears neko") or msg.content.startswith("사잽아 네코"):
-		r = requests.get("https://nekos.life/api/neko")
-		r = r.text
-		data = json.loads(r)
-		file = data["neko"]
-		embed=discord.Embed(title="")
-		embed.set_image(url=file)
-		await bot.send_message(msg.channel, embed=embed)
-
 
 
 bot.run(bot_token)

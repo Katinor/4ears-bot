@@ -19,6 +19,7 @@ import quadra_user_module
 from quadra_user_module import quadra_user
 from quadra_message_module import quadra_message
 import quadra_baseball, quadra_lotto, quadra_updown
+from quadra_perm_module import server_permission
 
 bot_token = quadra_config.BOT_TOKEN
 bot = commands.Bot(description="사잽아 도와줘 라고 말해주면 알려줄게!", command_prefix="")
@@ -91,6 +92,7 @@ async def version(msg,user):
 	now = log_append(chat_id, str(msg.content), "help",0)
 	text="반가워! 나는 사잽이라고해! 지금은 베타 버전이야!\n"
 	text+="나는 이런것들을 할 수 있어!\n"
+	text+="* 4ears channel help : 채널 제한 설정 안내\n"
 	text+="* 사잽아 누구니 : License Notice\n"
 	text+="* 사잽아, 사잽아 뭐하니, 사잽아 놀아줘\n"
 	#text+="* 쫑긋\n"
@@ -801,59 +803,63 @@ async def neko_lewd_search(msg,user):
 		await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 권한이 없어!")
 
 async def general_system(msg,user):
-	re_target = re.search('^사잽아 보고싶어$',msg.content)
-	if re_target:
-		em = discord.Embed(title="Katinor, the Quadra Ears",description="Katiadea Selinor\nCharacter Illustrated by 하얀로리, All Right Reserved.", colour=discord.Colour.blue())
-		em.set_image(url="https://i.imgur.com/VyRXaJw.png")
-		await bot.send_message(msg.channel,embed=em)
-	re_target = re.search('^사잽아 도와줘$',msg.content)
-	if re_target:
-		await version(msg,user)
-	re_target = re.search('^사잽아 누구니$',msg.content)
-	if re_target:
-		await credit_view(msg,user)
-	re_target = re.search('^사잽아 뭐하니$',msg.content)
-	if re_target:
-		await lifetime(msg,user)
-	re_target = re.search('^사잽(아*)$',msg.content)
-	if re_target:
-		await lifetime(msg,user)
-	re_target = re.search('^사잽아 안녕$',msg.content)
-	if re_target:
-		await lifetime(msg,user)
-	re_target = re.search('^사잽아 놀아줘$',msg.content)
-	if re_target:
-		await lifetime(msg,user)
-	re_target = re.search('^사잽아 ((?:(?! 어때).)*) 어때',msg.content)
-	if re_target:
-		await dialog_how(msg,user)
-	re_target = re.search('^사잽아 ((?:(?! 사줘).)*) 사줘',msg.content)
-	if re_target:
-		await dialog_buy(msg,user)
-	re_target = re.search('^사잽아 ((?:(?! (해줘|할래)).)*) (해줘|할래)',msg.content)
-	if re_target:
-		await dialog_please(msg,user)
-	re_target = re.search('^사잽아 ((?:(?! 하자).)*) 하자',msg.content)
-	if re_target:
-		await dialog_do(msg,user)
-	re_target = re.search('^사잽아 ((?:(?! 맞아\?).)*) 맞아\?',msg.content)
-	if re_target:
-		await game_prog(msg,user)
-	re_target = re.search('^사잽아 그만할래$',msg.content)
-	if re_target:
-		await game_end(msg,user)
-	re_target = re.search('^사잽아 용돈줘$',msg.content)
-	if re_target:
-		await get_supply(msg,user)
-	re_target = re.search('^사잽아 (?:((?:(?!에서).)*)에서 )?((?:(?! (알려줘|찾아줘)).)*) (알려줘|찾아줘)',msg.content)
-	if re_target:
-		await searching(msg,user)
-	re_target = re.search('^사잽아 네코',msg.content)
-	if re_target:
-		await neko_search(msg,user)
-	re_target = re.search('^사잽아 야한네코',msg.content)
-	if re_target:
-		await neko_lewd_search(msg,user)
+	perm_class = server_permission(msg.server.id)
+	# for general usage
+	if perm_class.perm_check("basic",msg.channel.id) or (msg.channel.permissions_for(msg.author)).administrator :
+		re_target = re.search('^사잽아 보고싶어$',msg.content)
+		if re_target:
+			em = discord.Embed(title="Katinor, the Quadra Ears",description="Katiadea Selinor\nCharacter Illustrated by 하얀로리, All Right Reserved.", colour=discord.Colour.blue())
+			em.set_image(url="https://i.imgur.com/VyRXaJw.png")
+			await bot.send_message(msg.channel,embed=em)
+		re_target = re.search('^사잽아 도와줘$',msg.content)
+		if re_target:
+			await version(msg,user)
+		re_target = re.search('^사잽아 누구니$',msg.content)
+		if re_target:
+			await credit_view(msg,user)
+		re_target = re.search('^사잽아 뭐하니$',msg.content)
+		if re_target:
+			await lifetime(msg,user)
+		re_target = re.search('^사잽(아*)$',msg.content)
+		if re_target:
+			await lifetime(msg,user)
+		re_target = re.search('^사잽아 안녕$',msg.content)
+		if re_target:
+			await lifetime(msg,user)
+		re_target = re.search('^사잽아 놀아줘$',msg.content)
+		if re_target:
+			await lifetime(msg,user)
+		re_target = re.search('^사잽아 ((?:(?! 어때).)*) 어때',msg.content)
+		if re_target:
+			await dialog_how(msg,user)
+		re_target = re.search('^사잽아 ((?:(?! 사줘).)*) 사줘',msg.content)
+		if re_target:
+			await dialog_buy(msg,user)
+		re_target = re.search('^사잽아 ((?:(?! (해줘|할래)).)*) (해줘|할래)',msg.content)
+		if re_target:
+			await dialog_please(msg,user)
+		re_target = re.search('^사잽아 ((?:(?! 하자).)*) 하자',msg.content)
+		if re_target:
+			await dialog_do(msg,user)
+		re_target = re.search('^사잽아 ((?:(?! 맞아\?).)*) 맞아\?',msg.content)
+		if re_target:
+			await game_prog(msg,user)
+		re_target = re.search('^사잽아 그만할래$',msg.content)
+		if re_target:
+			await game_end(msg,user)
+		re_target = re.search('^사잽아 용돈줘$',msg.content)
+		if re_target:
+			await get_supply(msg,user)
+		re_target = re.search('^사잽아 (?:((?:(?!에서).)*)에서 )?((?:(?! (알려줘|찾아줘)).)*) (알려줘|찾아줘)',msg.content)
+		if re_target:
+			await searching(msg,user)
+		re_target = re.search('^사잽아 네코',msg.content)
+		if re_target:
+			await neko_search(msg,user)
+	if perm_class.perm_check("nsfw",msg.channel.id) or (msg.channel.permissions_for(msg.author)).administrator :
+		re_target = re.search('^사잽아 야한네코',msg.content)
+		if re_target:
+			await neko_lewd_search(msg,user)
 
 async def admin_system(msg,user):
 	global admin
@@ -1278,6 +1284,69 @@ async def admin_system(msg,user):
 			now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 가르쳐 줄수 없어!")
 
+async def channel_system(msg,user):
+	if(msg.channel.permissions_for(msg.author)).administrator:
+		perm_class = server_permission(msg.server.id)
+		re_target = re.search('^4ears channel help$',msg.content)
+		if re_target:
+			now = log_append(msg.channel.id, str(msg.content), "chl","help1")
+			text = "start with \"4ears channel \"\n"
+			text += "add : 채널에 권한을 추가합니다.\n"
+			text += "del : 채널에 권한을 뺍니다.\n"
+			text += "purge : 채널을 초기화합니다.."
+			em = discord.Embed(title="QuadraEarsBot admin manual - main",description=text, colour=discord.Colour.blue())
+			em.set_thumbnail(url="https://i.imgur.com/pg7K8cQ.png")
+			await bot.send_message(msg.channel,embed=em)
+		re_target = re.search('^4ears channel add',msg.content)
+		if re_target:
+			now = log_append(msg.channel.id, str(msg.content), "chl","add")
+			if "-nsfw" in msg.content:
+				if perm_class.perm_check_admin("nsfw",msg.channel.id):
+					now = log_append(msg.channel.id, "already permissioned", "chl","add")
+					await bot.send_message(msg.channel,mention_user(user.user_id)+", 여긴 이미 허가되어있어!")
+				else:
+					perm_class.add("nsfw",msg.channel.id)
+					now = log_append(msg.channel.id, "permission success", "chl","add")
+					await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제 여기서 쫑긋 할께!")
+			else:
+				if perm_class.perm_check_admin("basic",msg.channel.id):
+					now = log_append(msg.channel.id, "already permissioned", "chl","add")
+					await bot.send_message(msg.channel,mention_user(user.user_id)+", 여긴 이미 허가되어있어!")
+				else:
+					perm_class.add("basic",msg.channel.id)
+					now = log_append(msg.channel.id, "permission success", "chl","add")
+					await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제 여기서 쫑긋 할께!")
+		re_target = re.search('^4ears channel del',msg.content)
+		if re_target:
+			now = log_append(msg.channel.id, str(msg.content), "chl","del")
+			if "-nsfw" in msg.content:
+				if perm_class.perm_check_admin("nsfw",msg.channel.id):
+					perm_class.delete("nsfw",msg.channel.id)
+					now = log_append(msg.channel.id, "permission delete", "chl","del")
+					await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제부터 여긴 안들을께!")
+				else:
+					now = log_append(msg.channel.id, "never heard", "chl","del")
+					await bot.send_message(msg.channel,mention_user(user.user_id)+", 여긴 원래부터 안듣고있었어!")
+			else:
+				if perm_class.perm_check_admin("basic",msg.channel.id):
+					perm_class.delete("basic",msg.channel.id)
+					now = log_append(msg.channel.id, "permission delete", "chl","del")
+					await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제부터 여긴 안들을께!")
+				else:
+					now = log_append(msg.channel.id, "never heard", "chl","del")
+					await bot.send_message(msg.channel,mention_user(user.user_id)+", 여긴 원래부터 안듣고있었어!")
+		re_target = re.search('^4ears channel purge',msg.content)
+		if re_target:
+			now = log_append(msg.channel.id, str(msg.content), "chl","pg")
+			if "-nsfw" in msg.content:
+				perm_class.delete_all("nsfw")
+				now = log_append(msg.channel.id, "purged", "chl","pg")
+				await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제부터 모든 채널을 안들을께!")
+			else:
+				perm_class.delete_all("basic")
+				now = log_append(msg.channel.id, "purged", "chl","pg")
+				await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제부터 모든 채널을 안들을께!")
+		del perm_class
 @bot.event
 async def on_ready():
 	global admin
@@ -1292,8 +1361,10 @@ async def on_message(msg):
 	said_user = quadra_user(msg.author.id)
 	chat_id = msg.channel.id
 
-	if msg.content.startswith("4ears"):
+	if msg.content.startswith("4ears admin"):
 		await admin_system(msg,said_user)
+	elif msg.content.startswith("4ears channel"):
+		await channel_system(msg,said_user)
 	elif msg.content.startswith("사잽아"):
 		await general_system(msg,said_user)
 	elif msg.author.bot == False :

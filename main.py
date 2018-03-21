@@ -788,21 +788,19 @@ async def neko_search(msg,user):
 
 async def neko_lewd_search(msg,user):
 	now = log_append(msg.channel.id, str(msg.content), "neko",0)
-	if str(user.user_id) in admin or str(user.user_id) in owner :
-		r = requests.get("https://nekos.life/api/v2/img/lewd")
-		r = r.text
-		data = json.loads(r)
-		file = data["url"]
-		embed=discord.Embed(title="")
-		embed.set_image(url=file)
-		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
-		await bot.send_message(msg.channel, embed=embed)
-	else:
-		log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-		now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
-		await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 권한이 없어!")
+	r = requests.get("https://nekos.life/api/v2/img/lewd")
+	r = r.text
+	data = json.loads(r)
+	file = data["url"]
+	embed=discord.Embed(title="")
+	embed.set_image(url=file)
+	user.mody(love = 1,love_time =True, exp = 5, exp_time = True)
+	await bot.send_message(msg.channel, embed=embed)
 
 async def general_system(msg,user):
+	re_target = re.search('^사잽아 도와줘$',msg.content)
+	if re_target:
+		await version(msg,user)
 	perm_class = server_permission(msg.server.id)
 	# for general usage
 	if perm_class.perm_check("basic",msg.channel.id) or (msg.channel.permissions_for(msg.author)).administrator :
@@ -811,9 +809,6 @@ async def general_system(msg,user):
 			em = discord.Embed(title="Katinor, the Quadra Ears",description="Katiadea Selinor\nCharacter Illustrated by 하얀로리, All Right Reserved.", colour=discord.Colour.blue())
 			em.set_image(url="https://i.imgur.com/VyRXaJw.png")
 			await bot.send_message(msg.channel,embed=em)
-		re_target = re.search('^사잽아 도와줘$',msg.content)
-		if re_target:
-			await version(msg,user)
 		re_target = re.search('^사잽아 누구니$',msg.content)
 		if re_target:
 			await credit_view(msg,user)
@@ -860,6 +855,7 @@ async def general_system(msg,user):
 		re_target = re.search('^사잽아 야한네코',msg.content)
 		if re_target:
 			await neko_lewd_search(msg,user)
+	del perm_class
 
 async def admin_system(msg,user):
 	global admin
@@ -1285,7 +1281,7 @@ async def admin_system(msg,user):
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 가르쳐 줄수 없어!")
 
 async def channel_system(msg,user):
-	if(msg.channel.permissions_for(msg.author)).administrator:
+	if(msg.channel.permissions_for(msg.author)).administrator or str(user.user_id) in admin or str(user.user_id) in owner:
 		perm_class = server_permission(msg.server.id)
 		re_target = re.search('^4ears channel help$',msg.content)
 		if re_target:
@@ -1347,6 +1343,7 @@ async def channel_system(msg,user):
 				now = log_append(msg.channel.id, "purged", "chl","pg")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제부터 모든 채널을 안들을께!")
 		del perm_class
+	else: await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 이 채널에 권한이 없어!")
 @bot.event
 async def on_ready():
 	global admin

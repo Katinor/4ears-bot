@@ -40,7 +40,9 @@ direct_url = {
 	'옥션': 'http://www.auction.co.kr/',
 	'에버노트': 'https://evernote.com/intl/ko',
 	'픽시브': 'https://www.pixiv.net/?lang=ko',
-	'알파위키': 'https://alphawiki.org'
+	'알파위키': 'https://alphawiki.org',
+	'사잽위키': 'https://wiki.4ears.net',
+	'사잽닷넷': 'https://4ears.net'
 }
 
 hentai_url = {

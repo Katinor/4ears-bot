@@ -97,13 +97,16 @@ async def version(msg,user):
 	text+="* 사잽아 누구니 : License Notice\n"
 	text+="* 사잽아, 사잽아 뭐하니, 사잽아 놀아줘\n"
 	#text+="* 쫑긋\n"
-	text+="* 사잽아 ~~ 찾아줘/알려줘\n"
+	text+="* 사잽아 ~~ 찾아줘\n"
 	text+="	* 지원 엔진 : 구글, 네이버, 나무위키, 리브레위키, 위키백과, 구스위키, 진보위키, 백괴사전\n"
 	text+="* 사잽아 ~ 해줘/하자/어때/사줘\n * 사잽아 (게임이름) 하자\n"
 	text+=" * 지원 게임 : 야구게임, 업다운, 로또(판당 1000원)\n"
 	text+="* 사잽아 나 어때\n"
 	text+="* 사잽아 용돈줘\n"
-	text+="* 사잽아 네코 : nekos.life API를 사용해 무작위의 고양이귀 짤을 가져옵니다."
+	text+="* 사잽아 네코 : nekos.life API를 사용해 무작위의 고양이귀 짤을 가져옵니다.\n"
+	text+="* 사잽아 ~ 기억해줘 : 사잽이에게 메모를 기억하게 합니다.\n"
+	text+="* 사잽아 ~번/전부 알려줘 : 기억한 메모를 확인합니다.\n"
+	text+="* 사잽아 ~번/전부 잊어줘 : 기억한 메모를 지웁니다."
 	user.mody(love = 1, love_time = True, exp = 5, exp_time = True)
 	em = discord.Embed(title="여길 누르면 지원채널로 갈 수 있어!",description=text, colour=discord.Colour.blue(), url = "https://discord.gg/nywZ29w")
 	em.set_image(url="https://i.imgur.com/VyRXaJw.png")
@@ -1060,7 +1063,8 @@ async def admin_system(msg,user):
 			text += "levcng : change user's level of this bot.\n"
 			text += "expcng : change user's experiance point of this bot.\n"
 			text += "cash : check user's cash of this bot.\n"
-			text += "cashcng : change user's cash of this bot."
+			text += "cashcng : change user's cash of this bot.\n"
+			text += "memo : check user's memo. (can used by server admin!)"
 			em = discord.Embed(title="QuadraEarsBot admin manual - user",description=text, colour=discord.Colour.blue())
 			em.set_thumbnail(url="https://i.imgur.com/pg7K8cQ.png")
 			await bot.send_message(msg.channel,out_text,embed=em)
@@ -1450,6 +1454,30 @@ async def admin_system(msg,user):
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
 				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 가르쳐 줄수 없어!")
+			break
+		re_target = re.search('^4ears admin memo',msg.content)
+		if re_target:
+			now = log_append(msg.channel.id, str(msg.content), "adm","mm")
+			if str(user.user_id) in admin or str(user.user_id) in owner or (msg.channel.permissions_for(msg.author)).administrator :
+				trg_list = msg.mentions
+				if len(trg_list) == 1:
+					text = mention_user(user.user_id)+", "
+					trg_id = trg_list[0].id
+					memo_status = quadra_memo(trg_id)
+					if memo_status.memo_num == 0:
+						text += mention_user(trg_id)+"는 메모를 쓴게 없어!"
+						now = log_append(msg.channel.id, "list failed! : no memo", "adm","mm")
+						await bot.send_message(msg.channel,text)
+					else :
+						text += mention_user(trg_id)+"의 메모를 찾았어!"
+						now = log_append(msg.channel.id, "list check!", "adm","mm")
+						em = discord.Embed(title="내가 기억하고 있는 것들이야!", colour=discord.Colour.blue())
+						temp_int = 1
+						for i in memo_status.memo_str:
+							em.add_field(name=str(temp_int)+"번", value=i, inline=False)
+							now = log_append(msg.channel.id,str(temp_int)+" : "+i, "mm_ck",0)
+							temp_int += 1
+						await bot.send_message(msg.channel,text,embed=em)					
 			break
 		break
 

@@ -20,6 +20,7 @@ from quadra_user_module import quadra_user
 from quadra_message_module import quadra_message
 import quadra_baseball, quadra_lotto, quadra_updown
 from quadra_perm_module import server_permission
+from quadra_memo_module import quadra_memo
 
 bot_token = quadra_config.BOT_TOKEN
 bot = commands.Bot(description="사잽아 도와줘 라고 말해주면 알려줄게!", command_prefix="")
@@ -806,6 +807,115 @@ async def dialog_lone(msg,user):
 	user.mody(love = 2,love_time = True, exp = 5, exp_time = True)
 	await bot.send_message(msg.channel,text)	
 
+async def memo_append(msg,user):
+	chat_id = msg.channel.id
+	chat_from = msg.author.id
+	now = log_append(chat_id, str(msg.content), "mm_add",0)
+	text = mention_user(user.user_id)+", "
+	target = re.search('^사잽아 ((?:(?! 기억해줘).)*) 기억해줘', str(msg.content))
+	target = target.groups()
+	memo_status = quadra_memo(user.user_id)
+	temp_swt = memo_status.append(str(target[0]))
+	if temp_swt == 0:
+		text += "메모로 기록할께! "+str(memo_status.memo_num + 1)+"번째 메모야!"
+		now = log_append(chat_id, "add success! : current num = "+str(memo_status.memo_num + 1), "mm_add",0)
+		await bot.send_message(msg.channel,text)
+	if temp_swt == 1:
+		text += "너무 길어서 기억 못하겠어!"
+		now = log_append(chat_id, "add failed! : string stack overflow", "mm_add",0)
+		await bot.send_message(msg.channel,text)
+	if temp_swt == 2:
+		text += "이미 너무 많이 기억하고있어!"
+		now = log_append(chat_id, "add failed! : capacity stack overflow", "mm_add",0)
+		await bot.send_message(msg.channel,text)
+	if temp_swt == 3:
+		text += "이상한게 끼여있어서 못기억하겠어!"
+		now = log_append(chat_id, "add failed! : forbidden string included", "mm_add",0)
+		await bot.send_message(msg.channel,text)
+
+async def memo_delete(msg,user):
+	chat_id = msg.channel.id
+	chat_from = msg.author.id
+	now = log_append(chat_id, str(msg.content), "mm_del",0)
+	text = mention_user(user.user_id)+", "
+	target = re.search('^사잽아 ((?:(?! 잊어줘).)*) 잊어줘', str(msg.content))
+	target = target.groups()
+	memo_status = quadra_memo(user.user_id)
+	if target[0] == "전부":
+		temp_swt = memo_status.purge()
+		if temp_swt == 0:
+			text += "메모를 전부 지웠어!"
+			now = log_append(chat_id, "purge success!", "mm_del",0)
+			await bot.send_message(msg.channel,text)
+		if temp_swt == 1:
+			text += "메모가 없어!"
+			now = log_append(chat_id, "purge failed! : index out of range", "mm_del",0)
+			await bot.send_message(msg.channel,text)
+	else:
+		target = (target[0].split('번'))[0]
+		try : temp_swt = memo_status.delete(int(target))
+		except Exception as ex: temp_swt = 3
+		if temp_swt == 0:
+			text += "메모를 지웠어! "+str(memo_status.memo_num - 1)+"개의 메모가 남아있어!"
+			now = log_append(chat_id, "del success! : current num = "+str(memo_status.memo_num - 1), "mm_del",0)
+			await bot.send_message(msg.channel,text)
+		if temp_swt == 1:
+			text += "그정도로 많이 기억하고 있진 않아!"
+			now = log_append(chat_id, "del failed! : capacity stack overflow", "mm_del",0)
+			await bot.send_message(msg.channel,text)
+		if temp_swt == 2:
+			text += "그런 번호는 없다구!"
+			now = log_append(chat_id, "del failed! : num must be at least 1", "mm_del",0)
+			await bot.send_message(msg.channel,text)
+		if temp_swt == 3:
+			text += "뭘 잊어달라는건지 모르겠어!"
+			now = log_append(chat_id, "del failed! : error occured", "mm_del",0)
+			await bot.send_message(msg.channel,text)
+
+async def memo_check(msg,user):
+	chat_id = msg.channel.id
+	chat_from = msg.author.id
+	now = log_append(chat_id, str(msg.content), "mm_ck",0)
+	text = mention_user(user.user_id)+", "
+	target = re.search('^사잽아 ((?:(?! 알려줘).)*) 알려줘', str(msg.content))
+	target = target.groups()
+	memo_status = quadra_memo(user.user_id)
+	if target[0] == "전부":
+		if memo_status.memo_num == 0:
+			text += "기억하고 있는게 없어!"
+			now = log_append(chat_id, "list failed! : no memo", "mm_ck",0)
+			await bot.send_message(msg.channel,text)
+		else :
+			text += "메모를 찾았어!"
+			now = log_append(chat_id, "list check!", "mm_ck",0)
+			em = discord.Embed(title="내가 기억하고 있는 것들이야!", colour=discord.Colour.blue())
+			temp_int = 1
+			for i in memo_status.memo_str:
+				em.add_field(name=str(temp_int)+"번", value=i, inline=False)
+				now = log_append(chat_id,str(temp_int)+" : "+i, "mm_ck",0)
+				temp_int += 1
+			await bot.send_message(msg.channel,text,embed=em)
+	else:
+		target = (target[0].split('번'))[0]
+		try : temp_swt = memo_status.check(int(target))
+		except Exception as ex: temp_swt = 3
+		if temp_swt == 1:
+			text += "그정도로 많이 기억하고 있진 않아!"
+			now = log_append(chat_id, "check failed! : capacity stack overflow", "mm_ck",0)
+			await bot.send_message(msg.channel,text)
+		elif temp_swt == 2:
+			text += "그런 번호는 없다구!"
+			now = log_append(chat_id, "check failed! : num must be at least 1", "mm_ck",0)
+			await bot.send_message(msg.channel,text)
+		elif temp_swt == 3:
+			text += "뭘 알려달라는건지 모르겠어!"
+			now = log_append(chat_id, "check failed! : error occured", "mm_ck",0)
+			await bot.send_message(msg.channel,text)
+		else:
+			text += "메모를 찾았어!"
+			now = log_append(chat_id, "check success! : "+temp_swt, "mm_ck",0)
+			em = discord.Embed(title=target+"번 메모",description=temp_swt, colour=discord.Colour.blue())
+			await bot.send_message(msg.channel,text,embed=em)
 
 async def general_system(msg,user):
 	while(True):
@@ -866,7 +976,7 @@ async def general_system(msg,user):
 			if re_target:
 				await get_supply(msg,user)
 				break
-			re_target = re.search('^사잽아 (?:((?:(?!에서).)*)에서 )?((?:(?! (알려줘|찾아줘)).)*) (알려줘|찾아줘)',msg.content)
+			re_target = re.search('^사잽아 (?:((?:(?!에서).)*)에서 )?((?:(?! 찾아줘).)*) 찾아줘',msg.content)
 			if re_target:
 				await searching(msg,user)
 				break
@@ -874,12 +984,25 @@ async def general_system(msg,user):
 			if re_target:
 				await neko_search(msg,user)
 				break
+			re_target = re.search('^사잽아 ((?:(?! 기억해줘).)*) 기억해줘',msg.content)
+			if re_target:
+				await memo_append(msg,user)
+				break
+			re_target = re.search('^사잽아 ((?:(?! 잊어줘).)*) 잊어줘',msg.content)
+			if re_target:
+				await memo_delete(msg,user)
+				break
+			re_target = re.search('^사잽아 ((?:(?! 알려줘).)*) 알려줘',msg.content)
+			if re_target:
+				await memo_check(msg,user)
+				break
 			if "외로워" in msg.content:
 				await dialog_lone(msg,user)
 				break
 			if "안녕" in msg.content:
 				await lifetime(msg,user)
 				break
+
 		if perm_class.perm_check("nsfw",msg.channel.id) or (msg.channel.permissions_for(msg.author)).administrator :
 			re_target = re.search('^사잽아 야한네코',msg.content)
 			if re_target:

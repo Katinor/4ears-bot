@@ -723,61 +723,107 @@ async def searching(msg,user):
 			now = log_append(chat_id, str(msg.content), "sch", "g_e")
 			text="미안해. 무슨 게임인지 잘 몰라서 대신 검색해줄게! ( " + quadra_search_list.search_engine["스팀"] + url_encode(target[1]) + " )"
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		else : 
 			now = log_append(chat_id, str(msg.content), "sch", "g")
 			game_target = quadra_game_list.game_number[game_real_name]
 			if game_target[0] == 0:
 				text="혹시 이 게임 찾으려는거 맞아? ( " + quadra_game_list.steam_shop+game_target[1] + " )"
 				user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+				await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 			else :
 				text=game_target[0]+" ( " + quadra_game_list.steam_shop+game_target[1] + " )"
 				user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+				await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	elif target[0] in quadra_search_list.search_engine:
 		if target[1] in quadra_search_vocab.adult_list:
 			now = log_append(chat_id, str(msg.content), "sch", "ad")
 			text="변태.. 이런거까지 찾아줘야해? ( " + quadra_search_list.search_engine[target[0]] + url_encode(target[1]) + " )"
 			inc = - 5 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
 			user.mody(love = inc, exp = 5, exp_time = True)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		elif target[1] in quadra_search_vocab.dis_list:
 			now = log_append(chat_id, str(msg.content), "sch", "dis")
 			text="... 이런걸 생각중이라면 그만둬. ..내가 너랑 함께 있어줄테니까. ( " + quadra_search_list.search_engine[target[0]] + url_encode(target[1]) + " )"
 			user.mody(love = 2,love_time = True, exp = 5, exp_time = True)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		elif target[1] in quadra_search_vocab.wonder_list:
 			now = log_append(chat_id, str(msg.content), "sch", "won")
 			text=quadra_search_vocab.wonder_list[target[1]] + " ( " + quadra_search_list.search_engine[target[0]] + url_encode(target[1]) + " )"
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		else:
 			now = log_append(chat_id, str(msg.content), "sch", 0)
 			text="이거 찾으려는거 맞지? ( " + quadra_search_list.search_engine[target[0]] + url_encode(target[1]) + " )"
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	elif target[1] in quadra_search_list.hentai_url:
 		now = log_append(chat_id, str(msg.content), "sch", "d_ad")
 		text="너는 정말 최악의 변태구나.. 자, 여깄어. ( " + quadra_search_list.hentai_url[target[1]] + " )"
 		inc = - 5 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
 		user.mody(love = inc, exp = 5, exp_time = True)
+		await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	elif target[1] in quadra_search_list.direct_url:
 		now = log_append(chat_id, str(msg.content), "sch", "d")
 		text="거기라면 나도 알고있어! 바로 보내줄께! ( " + quadra_search_list.direct_url[target[1]] + " )"
 		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+		await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
+	elif target[0] == "겔부루":
+		perm_class = server_permission(msg.server.id)
+		if perm_class.perm_check("nsfw",msg.channel.id) or (msg.channel.permissions_for(msg.author)).administrator :
+			now = log_append(chat_id, str(msg.content), "sch", "g")
+			temp_pid = str(random.randrange(0,1000))
+			if target[1] == "아무거나":
+				temp_url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid="+temp_pid+"&json=1"
+				tag_raw = "아무거나"
+			else:
+				tag_list = target[1].split(" ")
+				tag_raw = ""
+				for i in range(0,len(tag_list),1):
+					if i == len(tag_list)-1 : tag_raw += tag_list[i]
+					else : tag_raw += tag_list[i]+"+"
+				temp_url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid="+temp_pid+"&tags="+tag_raw+"&json=1"
+			try:
+				r = requests.get(temp_url)
+				r = r.text
+				data = json.loads(r)
+				file = data[0]["file_url"]
+				embed=discord.Embed(title="태그:"+tag_raw)
+				embed.set_image(url=file)
+				user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+				await bot.send_message(msg.channel, embed=embed)
+			except Exception as ex:
+				text="오류가 발생했어! 미안해."
+				user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+				await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
+		else :
+			text="변태.. 찾아줄 수 없어!"
+			inc = - 5 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
+			user.mody(love = inc, exp = 5, exp_time = True)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	else:
 		if target[1] in quadra_search_vocab.adult_list:
 			now = log_append(chat_id, str(msg.content), "sch", "n_ad")
 			text=target[1] + "라니... 변태! 이런거까지 찾아줘야해? ( " + quadra_search_list.search_engine["구글"] + url_encode(target[1]) + " )"
 			inc = - 5 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
 			user.mody(love = inc, exp = 5, exp_time = True)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		elif target[1] in quadra_search_vocab.dis_list:
 			now = log_append(chat_id, str(msg.content), "sch", "n_dis")
 			text=target[1] + "같은걸 생각중이라면 그만둬. ..내가 너랑 함께 있어줄테니까. ( " + quadra_search_list.search_engine['구글'] + url_encode( target[1]) + " )"
 			user.mody(love = 2,love_time = True, exp = 5, exp_time = True)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		elif target[1] in quadra_search_vocab.wonder_list:
 			now = log_append(chat_id, str(msg.content), "sch", "n_won")
 			text=quadra_search_vocab.wonder_list[target[1]] + " ( " + quadra_search_list.search_engine['구글'] + url_encode(target[1]) + " )"
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		else:
 			now = log_append(chat_id, str(msg.content), "sch", "n")
 			text="이거 찾으려는거 맞지? ( " + quadra_search_list.search_engine["구글"] + url_encode(target[1]) + " )"
-			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)	
-	await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
+			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
+	
 
 async def neko_search(msg,user):
 	now = log_append(msg.channel.id, str(msg.content), "neko",0)
@@ -928,7 +974,7 @@ async def general_system(msg,user):
 			break
 		perm_class = server_permission(msg.server.id)
 		# for general usage
-		if perm_class.perm_check("basic",msg.channel.id) or (msg.channel.permissions_for(msg.author)).administrator :
+		if perm_class.perm_check("basic",msg.channel.id) or perm_class.perm_check("nsfw",msg.channel.id) or (msg.channel.permissions_for(msg.author)).administrator :
 			re_target = re.search('^사잽아 보고싶어$',msg.content)
 			if re_target:
 				em = discord.Embed(title="Katinor, the Quadra Ears",description="Katiadea Selinor\nCharacter Illustrated by 하얀로리, All Right Reserved.", colour=discord.Colour.blue())

@@ -804,11 +804,14 @@ async def searching(msg,user):
 				tag_raw = "rating:safe"
 			else:
 				tag_list = target[1].split(" ")
-				tag_raw = ""
+				if "rating:safe" in tag_list:
+					tag_raw = ""
+				else:
+					tag_raw = "rating:safe+"
 				for i in range(0,len(tag_list),1):
 					if i == len(tag_list)-1 : tag_raw += tag_list[i]
 					else : tag_raw += tag_list[i]+"+"
-				temp_url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid="+temp_pid+"&tags=rating:safe+"+tag_raw+"&json=1"
+				temp_url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid="+temp_pid+"&tags="+tag_raw+"&json=1"
 			try:
 				r = requests.get(temp_url)
 				r = r.text

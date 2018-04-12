@@ -770,7 +770,7 @@ async def searching(msg,user):
 		await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	elif target[0] == "겔부루":
 		perm_class = server_permission(msg.server.id)
-		if perm_class.perm_check("nsfw",msg.channel.id) or (msg.channel.permissions_for(msg.author)).administrator :
+		if perm_class.perm_check("nsfw",msg.channel.id) :
 			now = log_append(chat_id, str(msg.content), "sch", "g")
 			temp_pid = str(random.randrange(0,1000))
 			if target[1] == "아무거나":
@@ -797,10 +797,31 @@ async def searching(msg,user):
 				user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		else :
-			text="변태.. 찾아줄 수 없어!"
-			inc = - 5 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
-			user.mody(love = inc, exp = 5, exp_time = True)
-			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
+			now = log_append(chat_id, str(msg.content), "sch", "g")
+			temp_pid = str(random.randrange(0,1000))
+			if target[1] == "아무거나":
+				temp_url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid="+temp_pid+"&tags=rating:safe&json=1"
+				tag_raw = "rating:safe"
+			else:
+				tag_list = target[1].split(" ")
+				tag_raw = ""
+				for i in range(0,len(tag_list),1):
+					if i == len(tag_list)-1 : tag_raw += tag_list[i]
+					else : tag_raw += tag_list[i]+"+"
+				temp_url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid="+temp_pid+"&tags=rating:safe+"+tag_raw+"&json=1"
+			try:
+				r = requests.get(temp_url)
+				r = r.text
+				data = json.loads(r)
+				file = data[0]["file_url"]
+				embed=discord.Embed(title="태그:"+tag_raw)
+				embed.set_image(url=file)
+				user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+				await bot.send_message(msg.channel, embed=embed)
+			except Exception as ex:
+				text="오류가 발생했어! 미안해."
+				user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+				await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	else:
 		if target[1] in quadra_search_vocab.adult_list:
 			now = log_append(chat_id, str(msg.content), "sch", "n_ad")
@@ -1537,8 +1558,9 @@ async def channel_system(msg,user):
 				text = "start with \"4ears channel \"\n"
 				text += "add : 채널에 권한을 추가합니다.\n"
 				text += "del : 채널에 권한을 뺍니다.\n"
-				text += "purge : 채널을 초기화합니다.."
-				em = discord.Embed(title="QuadraEarsBot admin manual - main",description=text, colour=discord.Colour.blue())
+				text += "purge : 채널을 초기화합니다.\n"
+				text += "stat : 현 채널의 권한을 확인합니다."
+				em = discord.Embed(title="QuadraEarsBot channel manual",description=text, colour=discord.Colour.blue())
 				em.set_thumbnail(url="https://i.imgur.com/pg7K8cQ.png")
 				await bot.send_message(msg.channel,embed=em)
 				break
@@ -1593,6 +1615,19 @@ async def channel_system(msg,user):
 					perm_class.delete_all("basic")
 					now = log_append(msg.channel.id, "purged", "chl","pg")
 					await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제부터 모든 채널을 안들을께!")
+				break
+			re_target = re.search('^4ears channel stat',msg.content)
+			if re_target:
+				now = log_append(msg.channel.id, str(msg.content), "chl","st")
+				perm_list_str = ""
+				if perm_class.perm_check("basic",msg.channel.id): perm_list_str += "basic,"
+				if perm_class.perm_check("nsfw",msg.channel.id): perm_list_str += "nsfw,"
+				em = discord.Embed(title="QuadraEarsBot channel status", colour=discord.Colour.blue())
+				em.set_thumbnail(url="https://i.imgur.com/pg7K8cQ.png")
+				em.add_field(name="basic 갯수", value=str(len(perm_class.allow_channel)), inline=True)
+				if len(perm_class.allow_nsfw) > 0 : em.add_field(name="nsfw 갯수", value=str(len(perm_class.allow_nsfw)), inline=True)
+				em.add_field(name="본채널", value=perm_list_str, inline=True)
+				await bot.send_message(msg.channel,embed=em)
 				break
 		else:
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 이 채널에 권한이 없어!")

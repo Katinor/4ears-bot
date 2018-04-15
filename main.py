@@ -3,6 +3,7 @@ import requests
 import json	
 import random
 import time
+import datetime
 import os
 import glob
 import asyncio
@@ -1649,9 +1650,9 @@ async def on_ready():
 async def on_message(msg):
 	global admin
 	global owner
-	said_user = quadra_user(msg.author.id)
 	chat_id = msg.channel.id
 	if msg.author.bot == False :
+		said_user = quadra_user(msg.author.id)
 		if msg.content.startswith("4ears admin"):
 			await admin_system(msg,said_user)
 		elif msg.content.startswith("4ears channel"):
@@ -1665,5 +1666,12 @@ async def on_message(msg):
 		if os.path.exists(profile_name) == True:
 			os.remove(profile_name)
 			now = log_append(msg.channel.id,msg.author.name+"#"+str(msg.author.discriminator)+" ("+str(msg.author.id)+" ) is bot. remained userdata has been deleted.","system",0)
+		if int(msg.author.id) != 423338258055823360 :
+			perm_c = server_permission(msg.server.id)
+			if perm_c.perm_check("basic",msg.channel.id) or perm_c.perm_check("nsfw",msg.channel.id):
+				rand_int = random.randrange(0,100)
+				if rand_int < 5:
+					now = log_append(msg.channel.id,"bot msg triggered","system",0)
+					await bot.send_message(msg.channel,msg.author.name+"랑만 놀지말고 나랑도 놀아줘!")
 
 bot.run(bot_token)

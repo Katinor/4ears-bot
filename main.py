@@ -1674,7 +1674,13 @@ async def on_message(msg):
 		elif msg.content.startswith("사잽아"):
 			await general_system(msg,said_user, perm_rank)
 		else :
-			said_user.mody(exp = len(msg.content))
+			exp_inc = 0
+			if len(msg.content) < 40 : exp_inc = len(msg.content)
+			elif len(msg.content) < 100 : exp_inc = 40 + int((len(msg.content)-40) * 0.5)
+			elif len(msg.content) < 180 : exp_inc = 70 + int((len(msg.content)-80) * 0.25)
+			elif len(msg.content) < 280 : exp_inc = 90 + int((len(msg.content)-140) * 0.1)
+			else : exp_inc = 100
+			said_user.mody(exp = exp_inc)
 	else :
 		profile_name = "user_database/"+str(msg.author.id)+".txt"
 		if os.path.exists(profile_name) == True:

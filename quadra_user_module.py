@@ -2,11 +2,14 @@ import os
 import random
 import quadra_config
 import time
+import glob
 
 LOVE_DELAY = 3
 EXP_DELAY = 3
 LOVE_GRADE = [-100,-70,-20,30,90,210,270,300]
 REQ_EXP = [10]
+
+
 
 MAX_LOVE = LOVE_GRADE[len(LOVE_GRADE)-1]
 MIN_LOVE = LOVE_GRADE[0]
@@ -32,6 +35,9 @@ for i in range(80,90,1):
 	REQ_EXP.append(int(REQ_EXP[i-1]*1.2))
 for i in range(90,100,1):
 	REQ_EXP.append(int(REQ_EXP[i-1]*1.3))
+
+CASH_SOFTCAP = 1000000
+EXP_HARDCAP = REQ_EXP[99] * 100
 
 fp = open("quadra_level_require.txt",'w')
 for i in REQ_EXP:
@@ -116,7 +122,7 @@ class quadra_user:
 				self.exp += exp
 				self.exp_time = time.time()
 		else: self.exp += exp
-
+		if self.exp > EXP_HARDCAP: self.exp = EXP_HARDCAP
 		if REQ_EXP[self.level-1] > self.exp:
 			for i in range(0,len(REQ_EXP),1):
 				if REQ_EXP[i] > self.exp:
@@ -140,6 +146,7 @@ class quadra_user:
 		if cash != None: self.cash = cash
 		if love != None: self.love = love
 		if exp != None: self.exp = exp
+		if self.exp > EXP_HARDCAP: self.exp = EXP_HARDCAP
 		if REQ_EXP[self.level-1] > self.exp:
 			for i in range(0,len(REQ_EXP),1):
 				if REQ_EXP[i] > self.exp:
@@ -186,3 +193,20 @@ class quadra_user:
 	def supply_text(self):
 		lev = self.love_level()
 		return supply_text[lev-1]
+
+	def user_rank(self):
+		user_list = glob.glob("user_database/*.*")
+		user_exp = []
+		trg_point = self.exp
+		for i in user_list:
+			fp = open(i,"r")
+			target = fp.readlines()
+			user_exp.append(int((target[4].split('\n'))[0]))
+		fp.close()
+		user_exp.sort()
+		user_exp.reverse()
+#		fp = open("exp_list.txt","w")
+#		for i in user_exp:
+#			fp.write(str(i)+"\n")
+#		fp.close()
+		return (user_exp.index(trg_point)+1,len(user_exp))

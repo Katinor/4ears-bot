@@ -13,7 +13,6 @@ uptime = 0
 pingtime = 0
 owner = [quadra_config.OWNER]
 admin = []
-LOTTO_CHARGE = 1000
 
 def onGame(user_id):
 	if quadra_baseball.enable(user_id) : return "야구게임을"
@@ -66,7 +65,7 @@ def url_encode(data):
 
 async def version(msg,user):
 	chat_id = msg.channel.id
-	now = log_append(chat_id, str(msg.content), "help",0)
+	log_append(chat_id, str(msg.content), "help",0)
 	text="반가워! 나는 사잽이라고해! 지금은 베타 버전이야!\n"
 	text+="나는 이런것들을 할 수 있어!\n"
 	text+="* 4ears channel help : 채널 제한 설정 안내\n"
@@ -91,7 +90,7 @@ async def version(msg,user):
 
 async def credit_view(msg,user):
 	chat_id = msg.channel.id
-	now = log_append(chat_id, str(msg.content), "credit",0)
+	log_append(chat_id, str(msg.content), "credit",0)
 	text="QuadraEarsBotⓒKatinor, All Right Reserved.\n"
 	text+=" https://blog.4ears.net/%EC%82%AC%EC%9E%BD%EC%9D%B4%EB%B4%87/ \n"
 	text+=" katinor@4ears.net\n\n"
@@ -110,9 +109,16 @@ async def credit_view(msg,user):
 async def lifetime(msg,user):
 	chat_id = msg.channel.id
 	now = log_append(chat_id, str(msg.content), "lifetime",0)
-	user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
-	text = mention_user(user.user_id)+" "+quadra_lifetime.checkSwitch(now)
-	await bot.send_message(msg.channel,text)
+	dup_num = user.lifetime_enable(now)
+	log_append(chat_id, str(dup_num[0])+" - "+dup_num[1]+" - "+dup_num[2], "lifetime",0)
+	if dup_num[0] < 6:
+		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
+		text = mention_user(user.user_id)+" "+quadra_lifetime.checkSwitch(now)
+		await bot.send_message(msg.channel,text)
+	else:
+		user.mody(love = -10)
+		text = mention_user(user.user_id)+" "+quadra_lifetime.checkSwitch2(now, user.love_level())
+		await bot.send_message(msg.channel,text)
 
 async def dialog_how(msg,user):
 	chat_id = msg.channel.id
@@ -215,8 +221,7 @@ async def dialog_how(msg,user):
 
 async def dialog_buy(msg,user):
 	chat_id = msg.channel.id
-	chat_from = msg.author.id
-	now = log_append(chat_id, str(msg.content), "d_buy",0)
+	log_append(chat_id, str(msg.content), "d_buy",0)
 	text = mention_user(user.user_id)+", "
 	target = re.search('^사잽아 ((?:(?! 사줘).)*) 사줘', str(msg.content))
 	target = target.groups()
@@ -237,7 +242,7 @@ async def dialog_buy(msg,user):
 
 async def dialog_please(msg,user):
 	chat_id = msg.channel.id
-	now = log_append(chat_id, str(msg.content), "d_plz",0)
+	log_append(chat_id, str(msg.content), "d_plz",0)
 	target = re.search('^사잽아 ((?:(?! (해줘|할래)).)*) (해줘|할래)', str(msg.content))
 	target = target.groups()
 	
@@ -342,10 +347,10 @@ async def dialog_do(msg,user):
 			out_text=mention_user(user.user_id)+", 이미 "+onGame(user.user_id)+" 플레이중인거 같은데?"
 			await bot.send_message(msg.channel,out_text)
 		else:
-			now = log_append(chat_id,str(msg.content), "bb","start1")
+			log_append(chat_id,str(msg.content), "bb","start1")
 			temp = quadra_baseball.start(user.user_id)
-			now = log_append(chat_id,str(user.user_id)+" "+str(temp), "bb","start2")
-			out_text=mention_user(user.user_id)+", 좋아! 이제 시작해보자~\n \"사잽아 ~ 맞아?\" 라고 말해줘!\n그만하고 싶다면 \"사잽아\ 그만할래\"라고 말해줘!"
+			log_append(chat_id,str(user.user_id)+" "+str(temp), "bb","start2")
+			out_text=mention_user(user.user_id)+", 좋아! 이제 시작해보자~\n \"사잽아 ~ 맞아?\" 라고 말해줘!\n그만하고 싶다면 \"사잽아 그만할래\"라고 말해줘!"
 			await bot.send_message(msg.channel,out_text)
 
 	elif target[0] == "업다운":
@@ -356,9 +361,9 @@ async def dialog_do(msg,user):
 			out_text=mention_user(user.user_id)+", 이미 "+onGame(user.user_id)+" 플레이중인거 같은데?"
 			await bot.send_message(msg.channel,out_text)
 		else:
-			now = log_append(chat_id, str(msg.content), "ud","start1")
+			log_append(chat_id, str(msg.content), "ud","start1")
 			temp = quadra_updown.start(user.user_id)
-			now = log_append(chat_id,str(user.user_id)+" "+str(temp), "ud","start2")
+			log_append(chat_id,str(user.user_id)+" "+str(temp), "ud","start2")
 			out_text=mention_user(user.user_id)+", 좋아! 이제 시작해보자~\n \"사잽아 ~ 맞아?\" 라고 말해줘!\n그만하고 싶다면 \"사잽아 그만할래\"라고 말해줘!"
 			await bot.send_message(msg.channel,out_text)
 
@@ -370,24 +375,23 @@ async def dialog_do(msg,user):
 			out_text=mention_user(user.user_id)+", 이미 "+onGame(user.user_id)+" 플레이중인거 같은데?"
 			await bot.send_message(msg.channel,out_text)
 		else:
-			if user.cash >= LOTTO_CHARGE :
-				
-				now = log_append(chat_id, str(msg.content), "lt","start1")
+			if user.cash >= quadra_config.LOTTO_CHARGE :
+				log_append(chat_id, str(msg.content), "lt","start1")
 				temp = quadra_lotto.start(user.user_id)
-				now = log_append(chat_id,str(user.user_id)+" "+str(temp), "lt","start2")
+				log_append(chat_id,str(user.user_id)+" "+str(temp), "lt","start2")
 				out_text=mention_user(user.user_id)+", 좋아! 이제 시작해보자~\n 1부터 35까지의 수 중 6개를 골라서 \"사잽아 ~ 맞아?\" 라고 말해줘. 예를 들면 \"사잽아 1 3 4 16 21 34 맞아?\" 느낌으로 써주면 돼!\n그만하고 싶다면 \"사잽아 그만할래\"라고 말해줘!\n\"사잽아 자동로또 해줘\"라고 말하면 자동으로 해볼게!."
 				em = discord.Embed(title=msg.author.name+"#"+str(msg.author.discriminator)+", 로또 구매 영수증이야!",colour=discord.Colour.blue())
 				if msg.author.avatar_url:	em.set_thumbnail(url=msg.author.avatar_url)
 				else : em.set_thumbnail(url="https://i.imgur.com/pg7K8cQ.png")
 				past_cash = user.cash
-				user.mody(cash = (-1)*LOTTO_CHARGE)
+				user.mody(cash = (-1)*quadra_config.LOTTO_CHARGE)
 				future_cash = user.cash
 				em.add_field(name="사용전", value=str(past_cash), inline=True)
 				em.add_field(name="비용", value="1000", inline=True)
 				em.add_field(name="사용후", value=str(future_cash), inline=True)
 				await bot.send_message(msg.channel,out_text,embed = em)
 			else:
-				now = log_append(chat_id,str(user.user_id)+" don't have enough money", "lt","nocs")
+				log_append(chat_id,str(user.user_id)+" don't have enough money", "lt","nocs")
 				out_text=mention_user(user.user_id)+", 로또를 하려면 1000원이 필요해!"
 				await bot.send_message(msg.channel,out_text)
 
@@ -413,7 +417,7 @@ async def dialog_do(msg,user):
 
 async def game_prog(msg,user):
 	chat_id = msg.channel.id
-	now = log_append(chat_id, str(msg.content), "gm","prog")
+	log_append(chat_id, str(msg.content), "gm","prog")
 	game_name = onGame(user.user_id)
 	if game_name == "야구게임을":
 		target = re.search('^사잽아 ((?:(?! 맞아\?).)*) 맞아\?', str(msg.content))
@@ -637,7 +641,7 @@ async def game_prog(msg,user):
 
 async def game_end(msg,user):
 	chat_id = msg.channel.id
-	now = log_append(chat_id, str(msg.content), "bb","end")
+	log_append(chat_id, str(msg.content), "bb","end")
 	out_text = mention_user(user.user_id)+", "
 	game_name = onGame(user.user_id)
 	if game_name == "야구게임을":
@@ -668,10 +672,10 @@ async def game_end(msg,user):
 
 async def get_supply(msg,user):
 	chat_id = msg.channel.id
-	now = log_append(chat_id, str(msg.content), "bb","end")
+	log_append(chat_id, str(msg.content), "bb","end")
 	if user.canSupply():
 		out_text = mention_user(user.user_id)+", "+user.supply_text()
-		inc_array = [1000,5000,10000,12000,15000,20000,30000]
+		inc_array = quadra_config.SUPPLY_ARRAY
 		past_cash = user.cash
 		inc = inc_array[user.love_level()-1]
 		swt = 0
@@ -718,12 +722,12 @@ async def searching(msg,user,perm):
 				term_switch = 1
 				game_real_name = i[0]
 		if term_switch == 0:
-			now = log_append(chat_id, str(msg.content), "sch", "g_e")
+			log_append(chat_id, str(msg.content), "sch", "g_e")
 			text="미안해. 무슨 게임인지 잘 몰라서 대신 검색해줄게! ( " + quadra_search_list.search_engine["스팀"] + url_encode(target[1]) + " )"
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		else : 
-			now = log_append(chat_id, str(msg.content), "sch", "g")
+			log_append(chat_id, str(msg.content), "sch", "g")
 			game_target = quadra_game_list.game_number[game_real_name]
 			if game_target[0] == 0:
 				text="혹시 이 게임 찾으려는거 맞아? ( " + quadra_game_list.steam_shop+game_target[1] + " )"
@@ -735,40 +739,40 @@ async def searching(msg,user,perm):
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	elif target[0] in quadra_search_list.search_engine:
 		if target[1] in quadra_search_vocab.adult_list:
-			now = log_append(chat_id, str(msg.content), "sch", "ad")
+			log_append(chat_id, str(msg.content), "sch", "ad")
 			text="변태.. 이런거까지 찾아줘야해? ( " + quadra_search_list.search_engine[target[0]] + url_encode(target[1]) + " )"
 			inc = - 5 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
 			user.mody(love = inc, exp = 5, exp_time = True)
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		elif target[1] in quadra_search_vocab.dis_list:
-			now = log_append(chat_id, str(msg.content), "sch", "dis")
+			log_append(chat_id, str(msg.content), "sch", "dis")
 			text="... 이런걸 생각중이라면 그만둬. ..내가 너랑 함께 있어줄테니까. ( " + quadra_search_list.search_engine[target[0]] + url_encode(target[1]) + " )"
 			user.mody(love = 2,love_time = True, exp = 5, exp_time = True)
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		elif target[1] in quadra_search_vocab.wonder_list:
-			now = log_append(chat_id, str(msg.content), "sch", "won")
+			log_append(chat_id, str(msg.content), "sch", "won")
 			text=quadra_search_vocab.wonder_list[target[1]] + " ( " + quadra_search_list.search_engine[target[0]] + url_encode(target[1]) + " )"
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		else:
-			now = log_append(chat_id, str(msg.content), "sch", 0)
+			log_append(chat_id, str(msg.content), "sch", 0)
 			text="이거 찾으려는거 맞지? ( " + quadra_search_list.search_engine[target[0]] + url_encode(target[1]) + " )"
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	elif target[1] in quadra_search_list.hentai_url:
-		now = log_append(chat_id, str(msg.content), "sch", "d_ad")
+		log_append(chat_id, str(msg.content), "sch", "d_ad")
 		text="너는 정말 최악의 변태구나.. 자, 여깄어. ( " + quadra_search_list.hentai_url[target[1]] + " )"
 		inc = - 5 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
 		user.mody(love = inc, exp = 5, exp_time = True)
 		await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	elif target[1] in quadra_search_list.direct_url:
-		now = log_append(chat_id, str(msg.content), "sch", "d")
+		log_append(chat_id, str(msg.content), "sch", "d")
 		text="거기라면 나도 알고있어! 바로 보내줄께! ( " + quadra_search_list.direct_url[target[1]] + " )"
 		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 		await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	elif target[0] == "겔부루":
 		if perm >= 2 :
-			now = log_append(chat_id, str(msg.content), "sch", "g")
+			log_append(chat_id, str(msg.content), "sch", "g")
 			temp_pid = str(random.randrange(0,1000))
 			if target[1] == "아무거나":
 				temp_url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid="+temp_pid+"&json=1"
@@ -789,24 +793,24 @@ async def searching(msg,user,perm):
 					else : tag_raw += tag_list[i]+"+"
 				temp_url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid="+temp_pid+"&tags="+tag_raw+"&json=1"
 			try:
-				now = log_append(chat_id,"target : \""+ tag_raw+"\"", "sch", "g")
+				log_append(chat_id,"target : \""+ tag_raw+"\"", "sch", "g")
 				r = requests.get(temp_url)
 				r = r.text
 				data = json.loads(r)
 				file = data[0]["file_url"]
 				embed=discord.Embed(title="태그:"+tag_raw)
 				embed.set_image(url=file)
-				now = log_append(chat_id,"transmit success!", "sch", "g")
+				log_append(chat_id,"transmit success!", "sch", "g")
 				await bot.send_message(msg.channel, embed=embed)
 			except Exception as ex:
 				text="오류가 발생했어! 미안해."
-				now = log_append(chat_id,"error occured!", "sch", "g")
-				now = log_append(chat_id,ex, "sch", "g")
+				log_append(chat_id,"error occured!", "sch", "g")
+				log_append(chat_id,ex, "sch", "g")
 				if str(ex) == "list index out of range": text+=" 그 태그를 가진 그림이 충분히 없는 것 같아."
 				else: text+=" 그 태그를 가진 그림이 없어!"
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		else :
-			now = log_append(chat_id, str(msg.content), "sch", "g")
+			log_append(chat_id, str(msg.content), "sch", "g")
 			temp_pid = str(random.randrange(0,1000))
 			if target[1] == "아무거나":
 				temp_url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid="+temp_pid+"&tags=rating:safe&json=1"
@@ -822,47 +826,47 @@ async def searching(msg,user,perm):
 					else : tag_raw += tag_list[i]+"+"
 				temp_url = "https://gelbooru.com/index.php?page=dapi&s=post&q=index&limit=1&pid="+temp_pid+"&tags="+tag_raw+"&json=1"
 			try:
-				now = log_append(chat_id,"target : \""+ tag_raw+"\"", "sch", "g")
+				log_append(chat_id,"target : \""+ tag_raw+"\"", "sch", "g")
 				r = requests.get(temp_url)
 				r = r.text
 				data = json.loads(r)
 				file = data[0]["file_url"]
 				embed=discord.Embed(title="태그:"+tag_raw)
 				embed.set_image(url=file)
-				now = log_append(chat_id,"transmit success!", "sch", "g")
+				log_append(chat_id,"transmit success!", "sch", "g")
 				await bot.send_message(msg.channel, embed=embed)
 			except Exception as ex:
 				text="오류가 발생했어! 미안해."
-				now = log_append(chat_id,"error occured!", "sch", "g")
-				now = log_append(chat_id,ex, "sch", "g")
+				log_append(chat_id,"error occured!", "sch", "g")
+				log_append(chat_id,ex, "sch", "g")
 				if str(ex) == "list index out of range": text+=" 그 태그를 가진 그림이 충분히 없는 것 같아."
 				else: text+=" 그 태그를 가진 그림이 없어!"
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	else:
 		if target[1] in quadra_search_vocab.adult_list:
-			now = log_append(chat_id, str(msg.content), "sch", "n_ad")
+			log_append(chat_id, str(msg.content), "sch", "n_ad")
 			text=target[1] + "라니... 변태! 이런거까지 찾아줘야해? ( " + quadra_search_list.search_engine["구글"] + url_encode(target[1]) + " )"
 			inc = - 5 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
 			user.mody(love = inc, exp = 5, exp_time = True)
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		elif target[1] in quadra_search_vocab.dis_list:
-			now = log_append(chat_id, str(msg.content), "sch", "n_dis")
+			log_append(chat_id, str(msg.content), "sch", "n_dis")
 			text=target[1] + "같은걸 생각중이라면 그만둬. ..내가 너랑 함께 있어줄테니까. ( " + quadra_search_list.search_engine['구글'] + url_encode( target[1]) + " )"
 			user.mody(love = 2,love_time = True, exp = 5, exp_time = True)
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		elif target[1] in quadra_search_vocab.wonder_list:
-			now = log_append(chat_id, str(msg.content), "sch", "n_won")
+			log_append(chat_id, str(msg.content), "sch", "n_won")
 			text=quadra_search_vocab.wonder_list[target[1]] + " ( " + quadra_search_list.search_engine['구글'] + url_encode(target[1]) + " )"
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 		else:
-			now = log_append(chat_id, str(msg.content), "sch", "n")
+			log_append(chat_id, str(msg.content), "sch", "n")
 			text="이거 찾으려는거 맞지? ( " + quadra_search_list.search_engine["구글"] + url_encode(target[1]) + " )"
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 
 async def neko_search(msg,user):
-	now = log_append(msg.channel.id, str(msg.content), "neko",0)
+	log_append(msg.channel.id, str(msg.content), "neko",0)
 	r = requests.get("https://nekos.life/api/v2/img/neko")
 	r = r.text
 	data = json.loads(r)
@@ -873,7 +877,7 @@ async def neko_search(msg,user):
 	await bot.send_message(msg.channel, embed=embed)
 
 async def neko_lewd_search(msg,user):
-	now = log_append(msg.channel.id, str(msg.content), "neko",0)
+	log_append(msg.channel.id, str(msg.content), "neko",0)
 	r = requests.get("https://nekos.life/api/v2/img/lewd")
 	r = r.text
 	data = json.loads(r)
@@ -885,8 +889,7 @@ async def neko_lewd_search(msg,user):
 
 async def dialog_lone(msg,user):
 	chat_id = msg.channel.id
-	chat_from = msg.author.id
-	now = log_append(chat_id, str(msg.content), "d_lone",0)
+	log_append(chat_id, str(msg.content), "d_lone",0)
 	text = mention_user(user.user_id)+", "
 	text += random.choice(quadra_dialog_list.dialog_lone_list)
 	user.mody(love = 2,love_time = True, exp = 5, exp_time = True)
@@ -894,8 +897,7 @@ async def dialog_lone(msg,user):
 
 async def memo_append(msg,user):
 	chat_id = msg.channel.id
-	chat_from = msg.author.id
-	now = log_append(chat_id, str(msg.content), "mm_add",0)
+	log_append(chat_id, str(msg.content), "mm_add",0)
 	text = mention_user(user.user_id)+", "
 	target = re.search('^사잽아 ((?:(?! 기억해줘).)*) 기억해줘', str(msg.content))
 	target = target.groups()
@@ -903,25 +905,24 @@ async def memo_append(msg,user):
 	temp_swt = memo_status.append(str(target[0]))
 	if temp_swt == 0:
 		text += "메모로 기록할께! "+str(memo_status.memo_num + 1)+"번째 메모야!"
-		now = log_append(chat_id, "add success! : current num = "+str(memo_status.memo_num + 1), "mm_add",0)
+		log_append(chat_id, "add success! : current num = "+str(memo_status.memo_num + 1), "mm_add",0)
 		await bot.send_message(msg.channel,text)
 	if temp_swt == 1:
 		text += "너무 길어서 기억 못하겠어!"
-		now = log_append(chat_id, "add failed! : string stack overflow", "mm_add",0)
+		log_append(chat_id, "add failed! : string stack overflow", "mm_add",0)
 		await bot.send_message(msg.channel,text)
 	if temp_swt == 2:
 		text += "이미 너무 많이 기억하고있어!"
-		now = log_append(chat_id, "add failed! : capacity stack overflow", "mm_add",0)
+		log_append(chat_id, "add failed! : capacity stack overflow", "mm_add",0)
 		await bot.send_message(msg.channel,text)
 	if temp_swt == 3:
 		text += "이상한게 끼여있어서 못기억하겠어!"
-		now = log_append(chat_id, "add failed! : forbidden string included", "mm_add",0)
+		log_append(chat_id, "add failed! : forbidden string included", "mm_add",0)
 		await bot.send_message(msg.channel,text)
 
 async def memo_delete(msg,user):
 	chat_id = msg.channel.id
-	chat_from = msg.author.id
-	now = log_append(chat_id, str(msg.content), "mm_del",0)
+	log_append(chat_id, str(msg.content), "mm_del",0)
 	text = mention_user(user.user_id)+", "
 	target = re.search('^사잽아 ((?:(?! 잊어줘).)*) 잊어줘', str(msg.content))
 	target = target.groups()
@@ -930,37 +931,36 @@ async def memo_delete(msg,user):
 		temp_swt = memo_status.purge()
 		if temp_swt == 0:
 			text += "메모를 전부 지웠어!"
-			now = log_append(chat_id, "purge success!", "mm_del",0)
+			log_append(chat_id, "purge success!", "mm_del",0)
 			await bot.send_message(msg.channel,text)
 		if temp_swt == 1:
 			text += "메모가 없어!"
-			now = log_append(chat_id, "purge failed! : index out of range", "mm_del",0)
+			log_append(chat_id, "purge failed! : index out of range", "mm_del",0)
 			await bot.send_message(msg.channel,text)
 	else:
 		target = (target[0].split('번'))[0]
 		try : temp_swt = memo_status.delete(int(target))
-		except Exception as ex: temp_swt = 3
+		except Exception: temp_swt = 3
 		if temp_swt == 0:
 			text += "메모를 지웠어! "+str(memo_status.memo_num - 1)+"개의 메모가 남아있어!"
-			now = log_append(chat_id, "del success! : current num = "+str(memo_status.memo_num - 1), "mm_del",0)
+			log_append(chat_id, "del success! : current num = "+str(memo_status.memo_num - 1), "mm_del",0)
 			await bot.send_message(msg.channel,text)
 		if temp_swt == 1:
 			text += "그정도로 많이 기억하고 있진 않아!"
-			now = log_append(chat_id, "del failed! : capacity stack overflow", "mm_del",0)
+			log_append(chat_id, "del failed! : capacity stack overflow", "mm_del",0)
 			await bot.send_message(msg.channel,text)
 		if temp_swt == 2:
 			text += "그런 번호는 없다구!"
-			now = log_append(chat_id, "del failed! : num must be at least 1", "mm_del",0)
+			log_append(chat_id, "del failed! : num must be at least 1", "mm_del",0)
 			await bot.send_message(msg.channel,text)
 		if temp_swt == 3:
 			text += "뭘 잊어달라는건지 모르겠어!"
-			now = log_append(chat_id, "del failed! : error occured", "mm_del",0)
+			log_append(chat_id, "del failed! : error occured", "mm_del",0)
 			await bot.send_message(msg.channel,text)
 
 async def memo_check(msg,user):
 	chat_id = msg.channel.id
-	chat_from = msg.author.id
-	now = log_append(chat_id, str(msg.content), "mm_ck",0)
+	log_append(chat_id, str(msg.content), "mm_ck",0)
 	text = mention_user(user.user_id)+", "
 	target = re.search('^사잽아 ((?:(?! 알려줘).)*) 알려줘', str(msg.content))
 	target = target.groups()
@@ -968,37 +968,37 @@ async def memo_check(msg,user):
 	if target[0] == "전부":
 		if memo_status.memo_num == 0:
 			text += "기억하고 있는게 없어!"
-			now = log_append(chat_id, "list failed! : no memo", "mm_ck",0)
+			log_append(chat_id, "list failed! : no memo", "mm_ck",0)
 			await bot.send_message(msg.channel,text)
 		else :
 			text += "메모를 찾았어!"
-			now = log_append(chat_id, "list check!", "mm_ck",0)
+			log_append(chat_id, "list check!", "mm_ck",0)
 			em = discord.Embed(title="내가 기억하고 있는 것들이야!", colour=discord.Colour.blue())
 			temp_int = 1
 			for i in memo_status.memo_str:
 				em.add_field(name=str(temp_int)+"번", value=i, inline=False)
-				now = log_append(chat_id,str(temp_int)+" : "+i, "mm_ck",0)
+				log_append(chat_id,str(temp_int)+" : "+i, "mm_ck",0)
 				temp_int += 1
 			await bot.send_message(msg.channel,text,embed=em)
 	else:
 		target = (target[0].split('번'))[0]
 		try : temp_swt = memo_status.check(int(target))
-		except Exception as ex: temp_swt = 3
+		except Exception: temp_swt = 3
 		if temp_swt == 1:
 			text += "그정도로 많이 기억하고 있진 않아!"
-			now = log_append(chat_id, "check failed! : capacity stack overflow", "mm_ck",0)
+			log_append(chat_id, "check failed! : capacity stack overflow", "mm_ck",0)
 			await bot.send_message(msg.channel,text)
 		elif temp_swt == 2:
 			text += "그런 번호는 없다구!"
-			now = log_append(chat_id, "check failed! : num must be at least 1", "mm_ck",0)
+			log_append(chat_id, "check failed! : num must be at least 1", "mm_ck",0)
 			await bot.send_message(msg.channel,text)
 		elif temp_swt == 3:
 			text += "뭘 알려달라는건지 모르겠어!"
-			now = log_append(chat_id, "check failed! : error occured", "mm_ck",0)
+			log_append(chat_id, "check failed! : error occured", "mm_ck",0)
 			await bot.send_message(msg.channel,text)
 		else:
 			text += "메모를 찾았어!"
-			now = log_append(chat_id, "check success! : "+temp_swt, "mm_ck",0)
+			log_append(chat_id, "check success! : "+temp_swt, "mm_ck",0)
 			em = discord.Embed(title=target+"번 메모",description=temp_swt, colour=discord.Colour.blue())
 			await bot.send_message(msg.channel,text,embed=em)
 
@@ -1099,7 +1099,7 @@ async def admin_system(msg,user,perm):
 		global owner
 		re_target = re.search('^4ears admin help$',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","help1")
+			log_append(msg.channel.id, str(msg.content), "adm","help1")
 			if str(user.user_id) in owner:	out_text = mention_user(user.user_id)+", 너는 내 주인님이야!"
 			elif str(user.user_id) in admin: out_text = mention_user(user.user_id)+", 너는 권한을 가지고 있어!"
 			else : out_text = mention_user(user.user_id)+", 너는 따로 권한을 가지고 있지 않아!"
@@ -1113,7 +1113,7 @@ async def admin_system(msg,user,perm):
 			break
 		re_target = re.search('^4ears admin help admin$',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","help2")
+			log_append(msg.channel.id, str(msg.content), "adm","help2")
 			if str(user.user_id) in owner:	out_text = mention_user(user.user_id)+", 너는 내 주인님이야!"
 			elif str(user.user_id) in admin: out_text = mention_user(user.user_id)+", 너는 권한을 가지고 있어!"
 			else : out_text = mention_user(user.user_id)+", 너는 따로 권한을 가지고 있지 않아!"
@@ -1129,7 +1129,7 @@ async def admin_system(msg,user,perm):
 			break
 		re_target = re.search('^4ears admin help user$',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","help3")
+			log_append(msg.channel.id, str(msg.content), "adm","help3")
 			if str(user.user_id) in owner:	out_text = mention_user(user.user_id)+", 너는 내 주인님이야!"
 			elif str(user.user_id) in admin: out_text = mention_user(user.user_id)+", 너는 권한을 가지고 있어!"
 			else : out_text = mention_user(user.user_id)+", 너는 따로 권한을 가지고 있지 않아!"
@@ -1151,7 +1151,7 @@ async def admin_system(msg,user,perm):
 			break
 		re_target = re.search('^4ears admin list$',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","list")
+			log_append(msg.channel.id, str(msg.content), "adm","list")
 			if str(user.user_id) in owner:
 				text = ""
 				number = 0
@@ -1179,7 +1179,7 @@ async def admin_system(msg,user,perm):
 			break
 		re_target = re.search('^4ears admin list -server$',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","list")
+			log_append(msg.channel.id, str(msg.content), "adm","list")
 			if str(user.user_id) in owner:
 				text = ""
 				number = 0
@@ -1205,7 +1205,7 @@ async def admin_system(msg,user,perm):
 			break
 		re_target = re.search('^4ears admin list -mention$',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","list")
+			log_append(msg.channel.id, str(msg.content), "adm","list")
 			if str(user.user_id) in owner:
 				text = ""
 				number = 0
@@ -1233,7 +1233,7 @@ async def admin_system(msg,user,perm):
 			break
 		re_target = re.search('^4ears admin add',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","add")
+			log_append(msg.channel.id, str(msg.content), "adm","add")
 			if str(user.user_id) in owner:
 				add_list = msg.mentions
 				if add_list:
@@ -1242,12 +1242,12 @@ async def admin_system(msg,user,perm):
 					for i in add_list:
 						if i.id in admin : 
 							temp_text = i.name+"#"+i.discriminator+" : "+i.id
-							now = log_append(msg.channel.id,"already admin - "+temp_text, "adm","add")
+							log_append(msg.channel.id,"already admin - "+temp_text, "adm","add")
 							temp_s2 += 1
 						else :
 							admin.append(i.id)
 							temp_text = i.name+"#"+i.discriminator+" : "+i.id
-							now = log_append(msg.channel.id,"success to append - "+temp_text, "adm","add")
+							log_append(msg.channel.id,"success to append - "+temp_text, "adm","add")
 							temp_s1 += 1
 					admin = admin_save(admin)
 					temp_txt = "권한을 부여했어!"
@@ -1257,12 +1257,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+"대상이 잘못된거같은데?")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 내 주인님이 아냐!")
 			break
 		re_target = re.search('^4ears admin del',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","del")
+			log_append(msg.channel.id, str(msg.content), "adm","del")
 			if str(user.user_id) in owner:
 				del_list = msg.mentions
 				if del_list:
@@ -1272,11 +1272,11 @@ async def admin_system(msg,user,perm):
 						if str(i.id) in admin :
 							admin.remove(str(i.id))
 							temp_text = i.name+"#"+i.discriminator+" : "+i.id
-							now = log_append(msg.channel.id,"success to delete - "+temp_text, "adm","del")
+							log_append(msg.channel.id,"success to delete - "+temp_text, "adm","del")
 							temp_s2 += 1
 						else :
 							temp_text = i.name+"#"+i.discriminator+" : "+i.id
-							now = log_append(msg.channel.id,"not admin - "+temp_text, "adm","del")
+							log_append(msg.channel.id,"not admin - "+temp_text, "adm","del")
 							temp_s1 += 1
 					admin = admin_save(admin)
 					temp_txt = "권한을 다시 회수했어!"
@@ -1286,12 +1286,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+"대상이 잘못된거같은데?")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 내 주인님이 아냐!")	
 			break
 		re_target = re.search('^4ears admin profile',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","prof")
+			log_append(msg.channel.id, str(msg.content), "adm","prof")
 			if str(user.user_id) in admin or str(user.user_id) in owner :
 				trg_list = msg.mentions
 				if len(trg_list) == 1:
@@ -1334,12 +1334,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+" 한번에 한명만 물어봐줘!")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 가르쳐 줄수 없어!")	
 			break	
 		re_target = re.search('^4ears admin love',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","love")
+			log_append(msg.channel.id, str(msg.content), "adm","love")
 			if str(user.user_id) in admin or str(user.user_id) in owner :
 				trg_list = msg.mentions
 				if len(trg_list) == 1:
@@ -1351,12 +1351,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+" 한번에 한명만 물어봐줘!")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 가르쳐 줄수 없어!")
 			break
 		re_target = re.search('^4ears admin lvcng',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","lvcng")
+			log_append(msg.channel.id, str(msg.content), "adm","lvcng")
 			if str(user.user_id) in owner:
 				trg_list = msg.mentions
 				if len(trg_list) == 1:
@@ -1373,12 +1373,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+" 한번에 한명만 물어봐줘!")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 내 주인님이 아니야!!")
 			break
 		re_target = re.search('^4ears admin stats$',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","stats")
+			log_append(msg.channel.id, str(msg.content), "adm","stats")
 			if str(user.user_id) in admin or str(user.user_id) in owner:
 				fp = open("quadra_server_list.txt","w")
 				for i in bot.servers:
@@ -1388,12 +1388,12 @@ async def admin_system(msg,user,perm):
 				await bot.send_message(msg.channel,text)
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 내가 인정한 사람이 아니야!")
 			break
 		re_target = re.search('^4ears admin level',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","lv")
+			log_append(msg.channel.id, str(msg.content), "adm","lv")
 			if str(user.user_id) in admin or str(user.user_id) in owner :
 				trg_list = msg.mentions
 				if len(trg_list) == 1:
@@ -1413,12 +1413,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+" 한번에 한명만 물어봐줘!")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 가르쳐 줄수 없어!")
 			break
 		re_target = re.search('^4ears admin levcng',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","levcng")
+			log_append(msg.channel.id, str(msg.content), "adm","levcng")
 			if str(user.user_id) in owner:
 				trg_list = msg.mentions
 				if len(trg_list) == 1:
@@ -1435,12 +1435,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+" 한번에 한명만 물어봐줘!")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 내 주인님이 아니야!!")
 			break
 		re_target = re.search('^4ears admin expcng',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","expcng")
+			log_append(msg.channel.id, str(msg.content), "adm","expcng")
 			if str(user.user_id) in owner:
 				trg_list = msg.mentions
 				if len(trg_list) == 1:
@@ -1455,12 +1455,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+" 한번에 한명만 물어봐줘!")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 내 주인님이 아니야!!")
 			break
 		re_target = re.search('^4ears admin cash',msg.content)
 		if re_target and not ("cashcng" in msg.content):
-			now = log_append(msg.channel.id, str(msg.content), "adm","cs")
+			log_append(msg.channel.id, str(msg.content), "adm","cs")
 			if str(user.user_id) in admin or str(user.user_id) in owner :
 				trg_list = msg.mentions
 				if len(trg_list) == 1:
@@ -1474,12 +1474,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+" 한번에 한명만 물어봐줘!")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 가르쳐 줄수 없어!")
 			break
 		re_target = re.search('^4ears admin cashcng',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","cscng")
+			log_append(msg.channel.id, str(msg.content), "adm","cscng")
 			if str(user.user_id) in owner:
 				trg_list = msg.mentions
 				if len(trg_list) == 1:
@@ -1494,12 +1494,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+" 한번에 한명만 물어봐줘!")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 내 주인님이 아니야!!")
 			break
 		re_target = re.search('^4ears admin game',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","game")
+			log_append(msg.channel.id, str(msg.content), "adm","game")
 			if str(user.user_id) in admin or str(user.user_id) in owner:
 				trg_list = msg.mentions
 				if len(trg_list) == 1:
@@ -1532,12 +1532,12 @@ async def admin_system(msg,user,perm):
 				else: await bot.send_message(msg.channel,mention_user(user.user_id)+", 한번에 한명만 물어봐줘!")
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
-				now = log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
 				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 가르쳐 줄수 없어!")
 			break
 		re_target = re.search('^4ears admin memo',msg.content)
 		if re_target:
-			now = log_append(msg.channel.id, str(msg.content), "adm","mm")
+			log_append(msg.channel.id, str(msg.content), "adm","mm")
 			if str(user.user_id) in admin or str(user.user_id) in owner or (msg.channel.permissions_for(msg.author)).administrator :
 				trg_list = msg.mentions
 				if len(trg_list) == 1:
@@ -1546,16 +1546,16 @@ async def admin_system(msg,user,perm):
 					memo_status = quadra_memo(trg_id)
 					if memo_status.memo_num == 0:
 						text += mention_user(trg_id)+"는 메모를 쓴게 없어!"
-						now = log_append(msg.channel.id, "list failed! : no memo", "adm","mm")
+						log_append(msg.channel.id, "list failed! : no memo", "adm","mm")
 						await bot.send_message(msg.channel,text)
 					else :
 						text += mention_user(trg_id)+"의 메모를 찾았어!"
-						now = log_append(msg.channel.id, "list check!", "adm","mm")
+						log_append(msg.channel.id, "list check!", "adm","mm")
 						em = discord.Embed(title="내가 기억하고 있는 것들이야!", colour=discord.Colour.blue())
 						temp_int = 1
 						for i in memo_status.memo_str:
 							em.add_field(name=str(temp_int)+"번", value=i, inline=False)
-							now = log_append(msg.channel.id,str(temp_int)+" : "+i, "mm_ck",0)
+							log_append(msg.channel.id,str(temp_int)+" : "+i, "mm_ck",0)
 							temp_int += 1
 						await bot.send_message(msg.channel,text,embed=em)					
 			break
@@ -1567,7 +1567,7 @@ async def channel_system(msg,user,perm):
 			perm_class = server_permission(msg.server.id)
 			re_target = re.search('^4ears channel help$',msg.content)
 			if re_target:
-				now = log_append(msg.channel.id, str(msg.content), "chl","help1")
+				log_append(msg.channel.id, str(msg.content), "chl","help1")
 				text = "start with \"4ears channel \"\n"
 				text += "add : 채널에 권한을 추가합니다.\n"
 				text += "del : 채널에 권한을 뺍니다.\n"
@@ -1579,59 +1579,59 @@ async def channel_system(msg,user,perm):
 				break
 			re_target = re.search('^4ears channel add',msg.content)
 			if re_target:
-				now = log_append(msg.channel.id, str(msg.content), "chl","add")
+				log_append(msg.channel.id, str(msg.content), "chl","add")
 				if "-nsfw" in msg.content:
 					if perm_class.perm_check_admin("nsfw",msg.channel.id):
-						now = log_append(msg.channel.id, "already permissioned", "chl","add")
+						log_append(msg.channel.id, "already permissioned", "chl","add")
 						await bot.send_message(msg.channel,mention_user(user.user_id)+", 여긴 이미 허가되어있어!")
 					else:
 						perm_class.add("nsfw",msg.channel.id)
-						now = log_append(msg.channel.id, "permission success", "chl","add")
+						log_append(msg.channel.id, "permission success", "chl","add")
 						await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제 여기서 쫑긋 할께!")
 				else:
 					if perm_class.perm_check_admin("basic",msg.channel.id):
-						now = log_append(msg.channel.id, "already permissioned", "chl","add")
+						log_append(msg.channel.id, "already permissioned", "chl","add")
 						await bot.send_message(msg.channel,mention_user(user.user_id)+", 여긴 이미 허가되어있어!")
 					else:
 						perm_class.add("basic",msg.channel.id)
-						now = log_append(msg.channel.id, "permission success", "chl","add")
+						log_append(msg.channel.id, "permission success", "chl","add")
 						await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제 여기서 쫑긋 할께!")
 				break
 			re_target = re.search('^4ears channel del',msg.content)
 			if re_target:
-				now = log_append(msg.channel.id, str(msg.content), "chl","del")
+				log_append(msg.channel.id, str(msg.content), "chl","del")
 				if "-nsfw" in msg.content:
 					if perm_class.perm_check_admin("nsfw",msg.channel.id):
 						perm_class.delete("nsfw",msg.channel.id)
-						now = log_append(msg.channel.id, "permission delete", "chl","del")
+						log_append(msg.channel.id, "permission delete", "chl","del")
 						await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제부터 여긴 안들을께!")
 					else:
-						now = log_append(msg.channel.id, "never heard", "chl","del")
+						log_append(msg.channel.id, "never heard", "chl","del")
 						await bot.send_message(msg.channel,mention_user(user.user_id)+", 여긴 원래부터 안듣고있었어!")
 				else:
 					if perm_class.perm_check_admin("basic",msg.channel.id):
 						perm_class.delete("basic",msg.channel.id)
-						now = log_append(msg.channel.id, "permission delete", "chl","del")
+						log_append(msg.channel.id, "permission delete", "chl","del")
 						await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제부터 여긴 안들을께!")
 					else:
-						now = log_append(msg.channel.id, "never heard", "chl","del")
+						log_append(msg.channel.id, "never heard", "chl","del")
 						await bot.send_message(msg.channel,mention_user(user.user_id)+", 여긴 원래부터 안듣고있었어!")
 				break
 			re_target = re.search('^4ears channel purge',msg.content)
 			if re_target:
-				now = log_append(msg.channel.id, str(msg.content), "chl","pg")
+				log_append(msg.channel.id, str(msg.content), "chl","pg")
 				if "-nsfw" in msg.content:
 					perm_class.delete_all("nsfw")
-					now = log_append(msg.channel.id, "purged", "chl","pg")
+					log_append(msg.channel.id, "purged", "chl","pg")
 					await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제부터 모든 채널을 안들을께!")
 				else:
 					perm_class.delete_all("basic")
-					now = log_append(msg.channel.id, "purged", "chl","pg")
+					log_append(msg.channel.id, "purged", "chl","pg")
 					await bot.send_message(msg.channel,mention_user(user.user_id)+", 이제부터 모든 채널을 안들을께!")
 				break
 			re_target = re.search('^4ears channel stat',msg.content)
 			if re_target:
-				now = log_append(msg.channel.id, str(msg.content), "chl","st")
+				log_append(msg.channel.id, str(msg.content), "chl","st")
 				perm_list_str = ""
 				if perm_class.perm_check("basic",msg.channel.id): perm_list_str += "basic,"
 				if perm_class.perm_check("nsfw",msg.channel.id): perm_list_str += "nsfw,"
@@ -1649,7 +1649,7 @@ async def channel_system(msg,user,perm):
 @bot.event
 async def on_ready():
 	global admin
-	now = log_append('system', 'Bot running Start', 'system',0)
+	log_append('system', 'Bot running Start', 'system',0)
 	admin = admin_load()
 	await bot.change_presence(game=discord.Game(name='사잽아 도와줘 <-- 도움말'))
 
@@ -1663,7 +1663,7 @@ async def on_message(msg):
 		if perm_class.perm_check("nsfw",msg.channel.id): perm_rank = 2
 		elif perm_class.perm_check("basic",msg.channel.id): perm_rank = 1
 		else: perm_rank = 0
-	except Exception as ex:
+	except Exception:
 		perm_rank = 2
 	if msg.author.bot == False :
 		said_user = quadra_user(msg.author.id)
@@ -1674,22 +1674,16 @@ async def on_message(msg):
 		elif msg.content.startswith("사잽아"):
 			await general_system(msg,said_user, perm_rank)
 		else :
-			exp_inc = 0
-			if len(msg.content) < 40 : exp_inc = len(msg.content)
-			elif len(msg.content) < 100 : exp_inc = 40 + int((len(msg.content)-40) * 0.5)
-			elif len(msg.content) < 180 : exp_inc = 70 + int((len(msg.content)-80) * 0.25)
-			elif len(msg.content) < 280 : exp_inc = 90 + int((len(msg.content)-140) * 0.1)
-			else : exp_inc = 100
-			said_user.mody(exp = exp_inc)
+			said_user.general_exp_process(len(msg.content))
 	else :
 		profile_name = "user_database/"+str(msg.author.id)+".txt"
 		if os.path.exists(profile_name) == True:
 			os.remove(profile_name)
-			now = log_append(msg.channel.id,msg.author.name+"#"+str(msg.author.discriminator)+" ("+str(msg.author.id)+" ) is bot. remained userdata has been deleted.","system",0)
+			log_append(msg.channel.id,msg.author.name+"#"+str(msg.author.discriminator)+" ("+str(msg.author.id)+" ) is bot. remained userdata has been deleted.","system",0)
 		if int(msg.author.id) != 423338258055823360 and perm_rank > 0 :
 			rand_int = random.randrange(0,100)
 			if rand_int < 2:
-				now = log_append(msg.channel.id,"bot msg triggered","system",0)
+				log_append(msg.channel.id,"bot msg triggered","system",0)
 				await bot.send_message(msg.channel,msg.author.name+"랑만 놀지말고 나랑도 놀아줘!")
 
 bot.run(bot_token)

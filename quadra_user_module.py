@@ -9,8 +9,6 @@ EXP_DELAY = 3
 LOVE_GRADE = [-100,-70,-20,30,90,210,270,300]
 REQ_EXP = [10]
 
-
-
 MAX_LOVE = LOVE_GRADE[len(LOVE_GRADE)-1]
 MIN_LOVE = LOVE_GRADE[0]
 
@@ -63,21 +61,23 @@ class quadra_user:
 	exp = 0
 	exp_time = 0
 	level = 0
+	lifetime_time = 0
+	lifetime_check = 0
 	def __init__(self,_user_id):
 		self.user_id = str(_user_id)
 		profile_name = "user_database/"+str(_user_id)+".txt"
 		if os.path.exists(profile_name) == False:
 			fp = open(profile_name, 'w')
-			for i in range(0,8,1):
+			for i in range(0,9,1):
 				fp.write("0\n")
-			fp.write("0")
 			fp.close()
 		fp = open(profile_name,'r')
 		target = fp.readlines()
 		fp.close()
 		for i in range(0,len(target),1):
-			if i < len(target)-1:target[i] = (target[i].split('\n'))[0]
+			target[i] = (target[i].split('\n'))[0]
 			if i == 3 or i == 5: target[i] = float(target[i])
+			if i == 7: target[i] = str(target[i])
 			else: target[i] = int(float(target[i]))
 		self.cash = target[0]
 		self.cash_time = target[1]
@@ -86,7 +86,13 @@ class quadra_user:
 		self.exp = target[4]
 		self.exp_time = target[5]
 		self.level = target[6]
-	
+		if len(target) < 8: 
+			self.lifetime_time = 0
+			self.lifetime_check = 0
+		else:
+			self.lifetime_time = target[7]
+			self.lifetime_check = target[8]
+
 	def save(self):
 		profile_name = "user_database/"+self.user_id+".txt"
 		fp = open(profile_name, 'w')
@@ -97,6 +103,8 @@ class quadra_user:
 		fp.write(str(self.exp)+"\n")
 		fp.write(str(self.exp_time)+"\n")
 		fp.write(str(self.level)+"\n")
+		fp.write(str(self.lifetime_time)+"\n")
+		fp.write(str(self.lifetime_check)+"\n")
 		fp.close()
 	
 	def canSupply(self):
@@ -205,8 +213,36 @@ class quadra_user:
 		fp.close()
 		user_exp.sort()
 		user_exp.reverse()
-#		fp = open("exp_list.txt","w")
-#		for i in user_exp:
-#			fp.write(str(i)+"\n")
-#		fp.close()
 		return (user_exp.index(trg_point)+1,len(user_exp))
+	
+	def general_exp_process(self, msg_len):
+		exp_inc = 0
+		l_lv = self.love_level()
+		temp_lv = l_lv
+		temp_len = msg_len
+		ratio = 1
+		check = 40
+		while temp_len > 0:
+			if temp_len > check:
+				exp_inc += int(ratio * check)
+				temp_len -= check
+				temp_lv -= 1
+				if temp_lv <= 0: break
+				ratio /= 2
+			else:
+				exp_inc += int(ratio * temp_len)
+				break
+		exp_inc = int(exp_inc * (1 + (0.05*(l_lv-3))))
+		self.mody(exp = exp_inc)
+
+	def lifetime_enable(self, time_var):
+		_now = time_var
+		priv_time = self.lifetime_time
+		target_time = "%02d%02d"%(_now.tm_hour, _now.tm_min)
+		if target_time == self.lifetime_time:
+			self.lifetime_check += 1
+		else:
+			self.lifetime_check = 1
+			self.lifetime_time = target_time
+		self.save()
+		return [self.lifetime_check, priv_time, target_time]

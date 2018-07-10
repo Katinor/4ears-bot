@@ -6,6 +6,8 @@ import quadra_baseball, quadra_lotto, quadra_updown
 from quadra_user_module import quadra_user
 from quadra_perm_module import server_permission
 from quadra_memo_module import quadra_memo
+import quadra_nsfw_module as nsfw_m
+from quadra_log_module import log_append
 
 bot_token = quadra_config.BOT_TOKEN
 bot = commands.Bot(description="사잽아 도와줘 라고 말해주면 알려줄게!", command_prefix="")
@@ -41,24 +43,6 @@ def admin_save(temp_arr):
 		else : fp.write(temp_arr[i]+"\n")
 	fp.close()
 	return admin_load()
-
-def log_append(_chat_id, _text, _type, _subtype):
-	_now = time.localtime()
-	if _subtype!=0 : what_type = _type +'_' +_subtype
-	else : what_type = _type
-	target = "[%04d-%02d-%02d %02d:%02d:%02d] trgd [%10s] from [%15s] : %s" % (_now.tm_year, _now.tm_mon, _now.tm_mday, _now.tm_hour, _now.tm_min, _now.tm_sec, what_type,str(_chat_id),_text)	
-	fp = open("log/quadra_bot_log.txt", 'a')
-	if os.path.getsize("log/quadra_bot_log.txt") >= 102400:
-		fp.close()
-		filelist = glob.glob("log/*.*")
-		filenum = len(filelist)
-		filename = "log/quadra_bot_log_"+str(filenum)+".txt"
-		os.rename("log/quadra_bot_log.txt",filename)
-		fp = open("log/quadra_bot_log.txt", 'a')
-	print(target)
-	fp.write(target+"\n")
-	fp.close()
-	return _now
 
 def url_encode(data):
 	return (parse.quote(data).replace('/', '%2F'))
@@ -865,28 +849,6 @@ async def searching(msg,user,perm):
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 			await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 
-async def neko_search(msg,user):
-	log_append(msg.channel.id, str(msg.content), "neko",0)
-	r = requests.get("https://nekos.life/api/v2/img/neko")
-	r = r.text
-	data = json.loads(r)
-	file = data["url"]
-	embed=discord.Embed(title="")
-	embed.set_image(url=file)
-	user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
-	await bot.send_message(msg.channel, embed=embed)
-
-async def neko_lewd_search(msg,user):
-	log_append(msg.channel.id, str(msg.content), "neko",0)
-	r = requests.get("https://nekos.life/api/v2/img/lewd")
-	r = r.text
-	data = json.loads(r)
-	file = data["url"]
-	embed=discord.Embed(title="")
-	embed.set_image(url=file)
-	user.mody(love = 1,love_time =True, exp = 5, exp_time = True)
-	await bot.send_message(msg.channel, embed=embed)
-
 async def dialog_lone(msg,user):
 	chat_id = msg.channel.id
 	log_append(chat_id, str(msg.content), "d_lone",0)
@@ -1010,25 +972,21 @@ async def general_system(msg,user,perm):
 			break
 		# for general usage
 		if perm > 0 or (msg.channel.permissions_for(msg.author)).administrator :
-			re_target = re.search('^사잽아 보고싶어$',msg.content)
-			if re_target:
+			if msg.content == "사잽아 보고싶어":
 				em = discord.Embed(title="Katinor, the Quadra Ears",description="Katiadea Selinor\nCharacter Illustrated by 하얀로리, All Right Reserved.", colour=discord.Colour.blue())
 				em.set_image(url="https://i.imgur.com/VyRXaJw.png")
 				await bot.send_message(msg.channel,embed=em)
 				break
-			re_target = re.search('^사잽아 누구니$',msg.content)
-			if re_target:
+			if msg.content == "사잽아 누구니":
 				await credit_view(msg,user)
 				break
-			re_target = re.search('^사잽아 뭐하니$',msg.content)
-			if re_target:
+			if msg.content == "사잽아 뭐하니":
+				await lifetime(msg,user)
+				break
+			if msg.content == "사잽아 놀아줘":
 				await lifetime(msg,user)
 				break
 			re_target = re.search('^사잽(아*)$',msg.content)
-			if re_target:
-				await lifetime(msg,user)
-				break
-			re_target = re.search('^사잽아 놀아줘$',msg.content)
 			if re_target:
 				await lifetime(msg,user)
 				break
@@ -1052,21 +1010,15 @@ async def general_system(msg,user,perm):
 			if re_target:
 				await game_prog(msg,user)
 				break
-			re_target = re.search('^사잽아 그만할래$',msg.content)
-			if re_target:
+			if msg.content == "사잽아 그만할래":
 				await game_end(msg,user)
 				break
-			re_target = re.search('^사잽아 용돈줘$',msg.content)
-			if re_target:
+			if msg.content == "사잽아 용돈줘":
 				await get_supply(msg,user)
 				break
 			re_target = re.search('^사잽아 (?:((?:(?!에서).)*)에서 )?((?:(?! 찾아줘).)*) 찾아줘',msg.content)
 			if re_target:
 				await searching(msg,user,perm)
-				break
-			re_target = re.search('^사잽아 네코',msg.content)
-			if re_target:
-				await neko_search(msg,user)
 				break
 			re_target = re.search('^사잽아 ((?:(?! 기억해줘).)*) 기억해줘',msg.content)
 			if re_target:
@@ -1086,10 +1038,13 @@ async def general_system(msg,user,perm):
 			if "안녕" in msg.content:
 				await lifetime(msg,user)
 				break
-		if perm >= 2 :
-			re_target = re.search('^사잽아 야한네코',msg.content)
-			if re_target:
-				await neko_lewd_search(msg,user)
+			if "네코" in msg.content:
+				log_append(msg.channel.id, str(msg.content), "neko",0)
+				result = nsfw_m.neko_search(msg.content,user,perm)
+				if result[2] >= 1:
+					await bot.send_message(msg.channel, embed=result[0])
+					log_append(msg.channel.id, "flag name : "+result[1], "neko",0)
+				else : await bot.send_message(msg.channel, mention_user(user.user_id)+", "+result[3])
 				break
 		break
 

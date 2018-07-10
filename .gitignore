@@ -2,6 +2,7 @@
 quadra_admin.txt
 quadra_config.py
 quadra_search_vocab.py
+quadra_nsfw_module.py
 quadra_server_list.txt
 main.sublime-project
 main.sublime-workspace

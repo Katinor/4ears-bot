@@ -196,7 +196,7 @@ class user_permission:
 			return 2
 		elif user_id in self.admin:
 			if "owner" in perm:
-				self.admin_del(user_id)
+				self.admin_del(user)
 				self.admin_save()
 				self.blocked.append(user_id)
 				temp_text = user.name+"#"+user.discriminator+" : "+user.id
@@ -211,7 +211,7 @@ class user_permission:
 			log_append("perm_module","success to block - "+temp_text, "bl","add")
 			return 0
 
-	def unblock(self, user, perm):
+	def unblock(self, user):
 		user_id = str(user.id)
 		if user.bot:
 			temp_text = user.name+"#"+user.discriminator+" : "+user.id

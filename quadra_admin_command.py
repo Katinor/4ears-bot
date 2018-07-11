@@ -78,7 +78,7 @@ async def admin_command(msg, user, channel_perm, user_perm, bot):
 					temp_s2 = 0
 					temp_s0 = 0
 					for i in add_list:
-						temp_var = user_perm.admin_add(i.id)
+						temp_var = user_perm.admin_add(i)
 						if temp_var == 0: temp_s0 += 1
 						elif temp_var == 1: temp_s1 += 1
 						elif temp_var == 2: temp_s2 += 1
@@ -103,7 +103,7 @@ async def admin_command(msg, user, channel_perm, user_perm, bot):
 					temp_s2 = 0
 					temp_s0 = 0
 					for i in add_list:
-						temp_var = user_perm.admin_del(i.id)
+						temp_var = user_perm.admin_del(i)
 						if temp_var == 0: temp_s0 += 1
 						elif temp_var == 1: temp_s1 += 1
 						elif temp_var == 2: temp_s2 += 1
@@ -130,7 +130,7 @@ async def admin_command(msg, user, channel_perm, user_perm, bot):
 					temp_s4 = 0
 					temp_s0 = 0
 					for i in add_list:
-						temp_var = user_perm.block(i.id)
+						temp_var = user_perm.block(i,author_perm)
 						if temp_var == 0: temp_s0 += 1
 						elif temp_var == 1: temp_s1 += 1
 						elif temp_var == 2: temp_s2 += 1
@@ -139,8 +139,8 @@ async def admin_command(msg, user, channel_perm, user_perm, bot):
 					user_perm.block_save()
 					temp_txt = "차단을 완료했어!"
 					if temp_s0 > 0 : temp_txt += "\n"+str(temp_s0)+"명을 무시할께!"
-					if temp_s4 > 0 : temp_txt += "\n"+str(temp_s2)+"명은 무시할 겸 관리자도 해고했어!!"
-					if temp_s3 > 0 : temp_txt += "\n"+str(temp_s2)+"명은 관리자라서 무시할 수 없어!"
+					if temp_s4 > 0 : temp_txt += "\n"+str(temp_s4)+"명은 무시할 겸 관리자도 해고했어!!"
+					if temp_s3 > 0 : temp_txt += "\n"+str(temp_s3)+"명은 관리자라서 무시할 수 없어!"
 					if temp_s1 > 0 : temp_txt += "\n"+str(temp_s1)+"명은 이미 무시하고있어!"
 					if temp_s2 > 0 : temp_txt += "\n"+str(temp_s2)+"명은 봇이야!"
 					await bot.send_message(msg.channel,mention_user(user.user_id)+", "+temp_txt)
@@ -159,7 +159,7 @@ async def admin_command(msg, user, channel_perm, user_perm, bot):
 					temp_s2 = 0
 					temp_s0 = 0
 					for i in add_list:
-						temp_var = user_perm.unblock(i.id)
+						temp_var = user_perm.unblock(i)
 						if temp_var == 0: temp_s0 += 1
 						elif temp_var == 1: temp_s1 += 1
 						elif temp_var == 2: temp_s2 += 1

@@ -9,6 +9,7 @@ from quadra_memo_module import quadra_memo
 import quadra_nsfw_module as nsfw_m
 from quadra_log_module import log_append
 from quadra_admin_command import admin_command
+from quadra_version import version, credit_view, tou_view
 
 bot_token = quadra_config.BOT_TOKEN
 bot = commands.Bot(description="사잽아 도와줘 라고 말해주면 알려줄게!", command_prefix="")
@@ -25,55 +26,11 @@ def mention_user(user_id):
 
 def url_encode(data):
 	return (parse.quote(data).replace('/', '%2F'))
-
-async def version(msg,user):
-	chat_id = msg.channel.id
-	log_append(chat_id, str(msg.content), "help",0)
-	text="반가워! 나는 사잽이라고해! 지금은 베타 버전이야!\n"
-	text+="나는 이런것들을 할 수 있어!\n"
-	text+="* 4ears channel help : 채널 제한 설정 안내\n"
-	text+="* 사잽아 누구니 : License Notice\n"
-	text+="* 사잽아, 사잽아 뭐하니, 사잽아 놀아줘\n"
-	#text+="* 쫑긋\n"
-	text+="* 사잽아 ~~ 찾아줘\n"
-	text+="	* 지원 엔진 : 구글, 네이버, 나무위키, 리브레위키, 위키백과, 구스위키, 진보위키, 백괴사전\n"
-	text+="* 사잽아 ~ 해줘/하자/어때/사줘\n * 사잽아 (게임이름) 하자\n"
-	text+=" * 지원 게임 : 야구게임, 업다운, 로또(판당 1000원)\n"
-	text+="* 사잽아 나 어때\n"
-	text+="* 사잽아 용돈줘\n"
-	text+="* 사잽아 네코 : nekos.life API를 사용해 무작위의 고양이귀 짤을 가져옵니다.\n"
-	text+="* 사잽아 ~ 기억해줘 : 사잽이에게 메모를 기억하게 합니다.\n"
-	text+="* 사잽아 ~번/전부 알려줘 : 기억한 메모를 확인합니다.\n"
-	text+="* 사잽아 ~번/전부 잊어줘 : 기억한 메모를 지웁니다."
-	user.mody(love = 1, love_time = True, exp = 5, exp_time = True)
-	em = discord.Embed(title="여길 누르면 지원채널로 갈 수 있어!",description=text, colour=discord.Colour.blue(), url = "https://discord.gg/nywZ29w")
-	em.set_image(url="https://i.imgur.com/VyRXaJw.png")
-	await bot.send_message(msg.channel,mention_user(user.user_id)+" "+"너에게 직접 보낼거야! 확인해봐!")
-	await bot.send_message(msg.author,embed=em)
-
-async def credit_view(msg,user):
-	chat_id = msg.channel.id
-	log_append(chat_id, str(msg.content), "credit",0)
-	text="QuadraEarsBotⓒKatinor, All Right Reserved.\n"
-	text+=" https://blog.4ears.net/%EC%82%AC%EC%9E%BD%EC%9D%B4%EB%B4%87/ \n"
-	text+=" katinor@4ears.net\n\n"
-	text+="You can see source on GitHub. and also use under AGPLv3.0\n"
-	text+=" https://github.com/Katinor/quadra_ears_bot_discord/\n\n"
-	text+="Character Illustrated by 하얀로리, All Right Reserved.\n"
-	text+=" https://www.pixiv.net/member.php?id=5882068 \n\n"
-	text+="This bot use nekos.life API.\n"
-	text+=" https://discord.services/api/"
-	user.mody(love = 1, love_time = True, exp = 5, exp_time = True)
-	em = discord.Embed(title="여길 누르면 블로그로 갈 수 있어!",description=text, colour=discord.Colour.blue(), url = "https://blog.4ears.net/%EC%82%AC%EC%9E%BD%EC%9D%B4%EB%B4%87/")
-	em.set_image(url="https://i.imgur.com/VyRXaJw.png")
-	await bot.send_message(msg.channel,mention_user(user.user_id)+" "+"너에게 직접 보낼거야! 확인해봐!")
-	await bot.send_message(msg.author,embed=em)
 	
 async def lifetime(msg,user):
 	chat_id = msg.channel.id
 	now = log_append(chat_id, str(msg.content), "lifetime",0)
 	dup_num = user.lifetime_enable(now)
-	log_append(chat_id, str(dup_num[0])+" - "+dup_num[1]+" - "+dup_num[2], "lifetime",0)
 	if dup_num[0] < 6:
 		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 		text = mention_user(user.user_id)+" "+quadra_lifetime.checkSwitch(now)
@@ -173,35 +130,10 @@ async def dialog_how(msg,user):
 		inc = - 10 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
 		user.mody(love = inc, exp = 5, exp_time = True)
 		await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
-	elif target[0] in quadra_dialog_list.dialog_how_list:
-		text=random.choice(quadra_dialog_list.dialog_how_list[target[0]])
-		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
-		await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
 	else:
 		text="미안. 무슨 말인지 모르겠어."
 		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 		await bot.send_message(msg.channel,mention_user(user.user_id)+", "+text)
-
-async def dialog_buy(msg,user):
-	chat_id = msg.channel.id
-	log_append(chat_id, str(msg.content), "d_buy",0)
-	text = mention_user(user.user_id)+", "
-	target = re.search('^사잽아 ((?:(?! 사줘).)*) 사줘', str(msg.content))
-	target = target.groups()
-	if target[0] in quadra_search_vocab.dis_list: 
-		text += random.choice(quadra_dialog_list.dialog_dis_buy)
-		user.mody(love = 2,love_time = True, exp = 5, exp_time = True)
-	elif target[0] in quadra_search_vocab.adult_list:
-		text += random.choice(quadra_dialog_list.dialog_hentai_buy)
-		inc = - 10 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
-		user.mody(love = inc, exp = 5, exp_time = True)
-	elif target[0] in quadra_dialog_list.dialog_buy_list:
-		text += random.choice(quadra_dialog_list.dialog_buy_list[target[0]])
-		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
-	else:
-		text += "그건 니돈으로 사는게 어때?"
-		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
-	await bot.send_message(msg.channel,text)
 
 async def dialog_please(msg,user):
 	chat_id = msg.channel.id
@@ -289,10 +221,6 @@ async def dialog_please(msg,user):
 		inc = -10-5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
 		user.mody(love = inc, exp = 5, exp_time = True)
 		await bot.send_message(msg.channel,mention_user(user.user_id)+", "+out_text)
-	elif target[0] in quadra_dialog_list.dialog_please_list:
-		out_text = random.choice(quadra_dialog_list.dialog_please_list[target[0]])
-		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
-		await bot.send_message(msg.channel,mention_user(user.user_id)+", "+out_text)
 	else:
 		out_text = "미안. 뭘 해달라는건지 모르겠어."
 		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
@@ -369,10 +297,6 @@ async def dialog_do(msg,user):
 			await bot.send_message(msg.channel,out_text)
 			inc = - 10 - 5*(quadra_user_module.MAX_LOVE - quadra_user_module.MIN_LOVE - user.love) / (quadra_user_module.MAX_LOVE-quadra_user_module.MIN_LOVE)
 			user.mody(love = inc, exp = 1, exp_time = True)
-		elif target[0] in quadra_dialog_list.dialog_do_list:
-			out_text=mention_user(user.user_id)+", "+random.choice(quadra_dialog_list.dialog_do_list[target[0]])
-			await bot.send_message(msg.channel,out_text)
-			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 		else:
 			out_text=mention_user(user.user_id)+", 미안. 뭘 하자는건지 모르겠어."
 			user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
@@ -945,19 +869,29 @@ async def memo_check(msg,user):
 
 async def general_system(msg,user,perm):
 	while(True):
-		re_target = re.search('^사잽아 도와줘$',msg.content)
+		if msg.content == "사잽아 도와줘":
+			await version(msg,user,"main",bot)
+			break
+		re_target = re.search('^사잽아 ((?:(?! 도와줘).)*) 도와줘',msg.content)
 		if re_target:
-			await version(msg,user)
+			re_target = re_target.groups()
+			await version(msg,user,re_target[0],bot)
 			break
 		# for general usage
 		if perm > 0 or (msg.channel.permissions_for(msg.author)).administrator :
 			if msg.content == "사잽아 보고싶어":
-				em = discord.Embed(title="Katinor, the Quadra Ears",description="Katiadea Selinor\nCharacter Illustrated by 하얀로리, All Right Reserved.", colour=discord.Colour.blue())
+				em = discord.Embed(title="Katinor, the Quadra Ears",description="Katiadea Selinor\nCharacter Illustrated by Muku, All Right Reserved.", colour=discord.Colour.blue())
 				em.set_image(url="https://i.imgur.com/VyRXaJw.png")
 				await bot.send_message(msg.channel,embed=em)
 				break
 			if msg.content == "사잽아 누구니":
-				await credit_view(msg,user)
+				await credit_view(msg,user,bot)
+				break
+			if msg.content == "사잽아 저작권":
+				await credit_view(msg,user,bot)
+				break
+			if msg.content.startswith("사잽아 이용약관"):
+				await tou_view(msg,user,bot)
 				break
 			if msg.content == "사잽아 뭐하니":
 				await lifetime(msg,user)
@@ -972,10 +906,6 @@ async def general_system(msg,user,perm):
 			re_target = re.search('^사잽아 ((?:(?! 어때).)*) 어때',msg.content)
 			if re_target:
 				await dialog_how(msg,user)
-				break
-			re_target = re.search('^사잽아 ((?:(?! 사줘).)*) 사줘',msg.content)
-			if re_target:
-				await dialog_buy(msg,user)
 				break
 			re_target = re.search('^사잽아 ((?:(?! (해줘|할래)).)*) (해줘|할래)',msg.content)
 			if re_target:
@@ -1126,7 +1056,7 @@ async def on_message(msg):
 		elif perm_class.perm_check("basic",msg.channel.id): perm_rank = 1
 		else: perm_rank = 0
 	except Exception:
-		perm_rank = 2
+		perm_rank = 1
 
 	if msg.author.bot == False :
 		said_user = quadra_user(msg.author.id)

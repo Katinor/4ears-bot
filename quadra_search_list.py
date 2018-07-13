@@ -3,7 +3,6 @@ search_engine = {
 	'리브레위키': 'https://librewiki.net/wiki/',
 	'백괴사전': 'https://uncyclopedia.kr/wiki/',
 	'위키백과': 'https://ko.wikipedia.org/wiki/',
-	'진보위키': 'https://jinbowiki.org/wiki/index.php/',
 	'구스위키': 'http://goos.wiki/index.php?title=',
 	'구글': 'https://www.google.co.kr/search?q=',
 	'네이버': 'https://search.naver.com/search.naver?query=',

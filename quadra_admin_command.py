@@ -2,6 +2,7 @@ import asyncio, discord, re, quadra_user_module
 from quadra_log_module import log_append
 from quadra_user_module import quadra_user
 from quadra_memo_module import quadra_memo
+from quadra_version import version, credit_view, tou_view
 
 def mention_user(user_id):
 	return "<@"+str(user_id)+">"
@@ -20,6 +21,8 @@ def admin_help(flag,user,user_perm):
 		out_embed+= "4ears admin help user to show commands about user data."
 	elif flag == "admin":
 		out_embed = "start with \"4ears admin \"\n"
+		out_embed+= "copyright : show copyright notice to channel\n"
+		out_embed+= "tou : show terms of use to channel\n"
 		out_embed+= "add : append user to admin list. Owner only.\n"
 		out_embed+= "del : remove user from admin list. Owner only."
 	elif flag == "block":
@@ -49,6 +52,24 @@ async def admin_command(msg, user, channel_perm, user_perm, bot):
 	log_text += "]"
 	log_append(msg.channel.id,"admin panel access : "+log_text, "adm","acc")
 	while(True):
+		if msg.content == '4ears admin copyright':
+			log_append(msg.channel.id, str(msg.content), "adm","cpy")
+			if "admin" in author_perm :
+				await credit_view(msg,user,bot,perm = True)
+			else:
+				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 권한이 없어!")
+			break
+		if msg.content == '4ears admin tou':
+			log_append(msg.channel.id, str(msg.content), "adm","tou")
+			if "admin" in author_perm :
+				await tou_view(msg,user,bot,perm = True)
+			else:
+				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 권한이 없어!")
+			break
 		if msg.content == '4ears admin help':
 			log_append(msg.channel.id, str(msg.content), "adm","help")
 			temp_cont = admin_help("main",user,author_perm)

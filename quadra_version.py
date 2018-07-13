@@ -166,7 +166,7 @@ async def version(msg,user,flag,bot):
 	await bot.send_message(msg.channel,mention_user(user.user_id)+" "+"너에게 직접 보낼거야! 확인해봐!")
 	await bot.send_message(msg.author,text,embed=em)
 
-async def credit_view(msg,user,bot):
+async def credit_view(msg,user,bot,perm = False):
 	chat_id = msg.channel.id
 	log_append(chat_id, str(msg.content), "credit",0)
 	text="4ears_bot Copyright Notice"
@@ -193,10 +193,13 @@ async def credit_view(msg,user,bot):
 	em.add_field(name = "Software License Terms", value = text)
 
 	user.mody(love = 1, love_time = True, exp = 5, exp_time = True)
-	await bot.send_message(msg.channel,mention_user(user.user_id)+" "+"너에게 직접 보낼거야! 확인해봐!")
-	await bot.send_message(msg.author,embed=em)
+	if perm:
+		await bot.send_message(msg.channel,embed=em)
+	else:
+		await bot.send_message(msg.channel,mention_user(user.user_id)+" "+"너에게 직접 보낼거야! 확인해봐!")
+		await bot.send_message(msg.author,embed=em)
 
-async def tou_view(msg,user,bot):
+async def tou_view(msg,user,bot,perm = False):
 	chat_id = msg.channel.id
 	log_append(chat_id, str(msg.content), "TOU",0)
 	text="사잽이 이용약관"
@@ -225,5 +228,8 @@ async def tou_view(msg,user,bot):
 	text ="사잽이봇은 국가의 명령이 있을 경우 그 기록을 수사기관에 제공할 수 있습니다. 그러니 애한테 위법적인것좀 시키지 마세요."
 	em.add_field(name = "국가기관과의 협조", value = text)
 	user.mody(love = 1, love_time = True, exp = 5, exp_time = True)
-	await bot.send_message(msg.channel,mention_user(user.user_id)+" "+"너에게 직접 보낼거야! 확인해봐!")
-	await bot.send_message(msg.author,embed=em)
+	if perm:
+		await bot.send_message(msg.channel,embed=em)
+	else:
+		await bot.send_message(msg.channel,mention_user(user.user_id)+" "+"너에게 직접 보낼거야! 확인해봐!")
+		await bot.send_message(msg.author,embed=em)

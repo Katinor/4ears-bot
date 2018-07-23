@@ -1,4 +1,4 @@
-import asyncio, discord, re, quadra_user_module
+import asyncio, discord, re, os, quadra_user_module
 from quadra_log_module import log_append
 from quadra_user_module import quadra_user
 from quadra_memo_module import quadra_memo
@@ -16,9 +16,16 @@ def admin_help(flag,user,user_perm):
 	if flag == "main":
 		out_embed = "start with \"4ears admin \"\n"
 		out_embed+= "stats : show how many server use this bot.\n"
+		out_embed+= "4ears admin help notice to show commands about sending notice\n"
 		out_embed+= "4ears admin help admin to show commands about permission.\n"
 		out_embed+= "4ears admin help block to show commands about blocking user.\n"
 		out_embed+= "4ears admin help user to show commands about user data."
+	elif flag == "notice":
+		out_embed = "notice : send notice to all owner of server. Owner only. must use with one option.\n"
+		out_embed+= " -c : check the notice file and show it to you.\n"
+		out_embed+= " -s : save additional string to the notice file.\n"
+		out_embed+= " -d : check the users take notice.\n"
+		out_embed+= " -g : send it."
 	elif flag == "admin":
 		out_embed = "start with \"4ears admin \"\n"
 		out_embed+= "copyright : show copyright notice to channel\n"
@@ -43,6 +50,92 @@ def admin_help(flag,user,user_perm):
 	em = discord.Embed(title="QuadraEarsBot admin manual - "+flag,description=out_embed, colour=discord.Colour.blue())
 	em.set_thumbnail(url="https://i.imgur.com/pg7K8cQ.png")
 	return [out_text, em]
+
+async def admin_notice(msg,bot):
+	swt = True
+	for i in ["-c","-s","-d","-g"]:
+		if i in msg.content: swt = False
+	if swt :
+		log_append("notice_module", "option is unavailable", "adm","notice")
+		await bot.send_message(msg.author,"옵션이 유효하지 않아!")
+		return 0
+
+	if "-c" in msg.content:
+		profile_name = "quadra_notice.txt"
+		if os.path.exists(profile_name):
+			fp = open(profile_name,"r")
+			log_append("notice_module", "file is exist. sended to owner", "adm","notice")
+			await bot.send_message(msg.author,"공지파일에 들어있는 내용이야!\n\n"+fp.read())
+			fp.close()
+		else:
+			log_append("notice_module", "there are no notice file.", "adm","notice")
+			await bot.send_message(msg.author,"공지파일이 존재하지 않아!")
+		return 0
+	if "-s" in msg.content:
+		profile_name = "quadra_notice.txt"
+		fp = open(profile_name, "w")
+		fp.write((msg.content.split("-s")[1])[1:])
+		fp.close()
+		fp = open(profile_name, "r")
+		log_append("notice_module", "file is created", "adm","notice")
+		await bot.send_message(msg.author,"공지파일에 들어있는 내용이야!\n\n"+fp.read())
+		fp.close()
+		return 0
+
+	log_append("notice_module", "check receiver", "adm","notice")
+	temp_strarr = []
+	target_owner = []
+	dup_num = 0
+	for i in bot.servers:
+		if i.owner in target_owner:
+			temp_strarr.append((i.name, i.owner,"Duplicated"))
+			dup_num += 1
+		else:
+			temp_strarr.append((i.name, i.owner,"Saved"))
+			target_owner.append(i.owner)
+	del target_owner
+	log_append("notice_module", "check receiver end : "+str(len(temp_strarr))+" servers, "+str(dup_num)+" dups", "adm","notice")
+	if "-d" in msg.content:
+		out_text = "아래 목록에 있는 사람들에게 보내질거야!\n\n"
+		for i in temp_strarr:
+			if i[2] == "Saved":
+				out_text+= i[1].name+"#"+i[1].discriminator+" : "+i[0]
+			else:
+				out_text+= i[1].name+"#"+i[1].discriminator+" : "+i[0]+" *(중복됨)*"
+			out_text+="\n"
+		out_text+="총 "+str(len(temp_strarr)-dup_num)+" 명에게 보낼거야. "+str(dup_num)+"명은 다른 서버도 가지고 있더라구."
+		await bot.send_message(msg.author,out_text)
+		log_append("notice_module", "receiver list has been transmitted", "adm","notice")
+		return 0
+
+	target_str = ""
+	profile_name = "quadra_notice.txt"
+
+	if os.path.exists(profile_name):
+		fp = open(profile_name,"r")
+		log_append("notice_module", "file is exist. load to memory.", "adm","notice")
+		target_str = fp.read()
+		fp.close
+	else:
+		log_append("notice_module", "there are no notice file.", "adm","notice")
+		await bot.send_message(msg.author,"공지파일이 존재하지 않아!")
+		return 0
+	
+	dup_num = 0
+	suc_num = 0
+
+	log_append("notice_module", "file checked, start to send", "adm","notice")
+	for i in temp_strarr:
+		if i[2] == "Saved":
+			await bot.send_message(i[1],target_str)
+			log_append("notice_module", i[1].name+"#"+i[1].discriminator+" : "+i[0], "adm","notice")
+			suc_num += 1
+		else:
+			log_append("notice_module", i[1].name+"#"+i[1].discriminator+" : "+i[0]+" (duplicated)", "adm","notice")
+			dup_num += 1
+	log_append("notice_module", "success : "+str(suc_num)+" success, "+str(dup_num)+" dups", "adm","notice")
+	await bot.send_message(msg.author,str(suc_num)+"명에게 보냈어! "+str(dup_num)+"명은 다른 서버도 소유하고 있었어.")
+	return 0
 
 async def admin_command(msg, user, channel_perm, user_perm, bot):
 	author_perm = user_perm.check(msg, user.user_id)
@@ -88,6 +181,11 @@ async def admin_command(msg, user, channel_perm, user_perm, bot):
 		if msg.content == '4ears admin help user':
 			log_append(msg.channel.id, str(msg.content), "adm","help")
 			temp_cont = admin_help("user",user,author_perm)
+			await bot.send_message(msg.channel,temp_cont[0],embed=temp_cont[1])
+			break
+		if msg.content == '4ears admin help notice':
+			log_append(msg.channel.id, str(msg.content), "adm","help")
+			temp_cont = admin_help("notice",user,author_perm)
 			await bot.send_message(msg.channel,temp_cont[0],embed=temp_cont[1])
 			break
 		if msg.content.startswith("4ears admin add"):
@@ -242,6 +340,15 @@ async def admin_command(msg, user, channel_perm, user_perm, bot):
 				fp.close()
 				text = mention_user(user.user_id)+", 현재 "+ str(len(bot.servers))+" 개의 서버에서 사용중이야! "+str(len(set(bot.get_all_members())))+" 명이 날 보고있어!"
 				await bot.send_message(msg.channel,text)
+			else:
+				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
+				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")
+				await bot.send_message(msg.channel,mention_user(user.user_id)+", 너는 내가 인정한 사람이 아니야!")
+			break
+		if msg.content.startswith('4ears admin notice'):
+			log_append(msg.channel.id, str(msg.content), "adm","notice")
+			if "owner" in author_perm:
+				await admin_notice(msg,bot)
 			else:
 				log_text = msg.author.name+"#"+msg.author.discriminator+" : "+msg.author.id
 				log_append(msg.channel.id,"access denied - "+log_text, "adm","err")

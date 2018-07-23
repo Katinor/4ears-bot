@@ -925,6 +925,9 @@ async def general_system(msg,user,perm):
 			if msg.content == "사잽아 용돈줘":
 				await get_supply(msg,user)
 				break
+			if msg.content == "사잽아 돈내놔":
+				await get_supply(msg,user)
+				break
 			re_target = re.search('^사잽아 (?:((?:(?!에서).)*)에서 )?((?:(?! 찾아줘).)*) 찾아줘',msg.content)
 			if re_target:
 				await searching(msg,user,perm)

@@ -958,6 +958,14 @@ async def general_system(msg,user,perm):
 					log_append(msg.channel.id, "flag name : "+result[1], "neko",0)
 				else : await bot.send_message(msg.channel, mention_user(user.user_id)+", "+result[3])
 				break
+			if "야옹" in msg.content:
+				log_append(msg.channel.id, str(msg.content), "neko",0)
+				result = nsfw_m.neko_search(msg.content,user,perm)
+				if result[2] >= 1:
+					await bot.send_message(msg.channel, embed=result[0])
+					log_append(msg.channel.id, "flag name : "+result[1], "neko",0)
+				else : await bot.send_message(msg.channel, mention_user(user.user_id)+", "+result[3])
+				break
 		break
 
 async def channel_system(msg,user,perm, user_perm):

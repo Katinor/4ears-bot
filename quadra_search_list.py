@@ -48,3 +48,13 @@ hentai_url = {
 	'히토미': 'https://hitomi.la',
 	'익헨': 'https://e-hentai.org/'
 }
+
+lang_list = {
+	'한글' : 'ko',
+	'한국어' : 'ko',
+	'영어' : 'en',
+	'일어' : 'ja',
+	'일본어' : 'ja',
+	'중국어' : 'zh-CN',
+	'대만어' : 'zh-TW'
+}

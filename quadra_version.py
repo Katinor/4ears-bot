@@ -32,6 +32,9 @@ def help_em_make(flag):
 	elif flag == "메모":
 		em = help_memo(em)
 		text = "이건 \"메모\" 카테고리의 도움말이야!"
+	elif flag == "번역":
+		em = help_trans(em)
+		text = "이건 \"번역\" 카테고리의 도움말이야!"
 	elif flag == "기타":
 		em = help_etc(em)
 		text = "이건 \"기타\" 카테고리의 도움말이야!"
@@ -59,6 +62,8 @@ def help_main(em):
 	em.add_field(name = "검색", value = text)
 	text="사잽아 <문자열> 기억해줘, 사잽아 <문자열> 알려줘, 사잽아 <문자열> 잊어줘"
 	em.add_field(name = "메모", value = text)
+	text="사잽아 <언어코드>로 <문자열> 번역해줘"
+	em.add_field(name = "번역", value = text)
 	text="사잽아 네코"
 	em.add_field(name = "기타", value = text)
 	return em
@@ -129,6 +134,16 @@ def help_memo(em):
 	em.add_field(name = "사잽아 <문자열> 알려줘", value = text)
 	text="해당 번호의 메모를 지웁니다. \"전부\"라고 쓰면 전부 지웁니다. 지운 메모는 공란으로 남는게 아니라, 다음 공간에 있는 메모를 당겨옵니다."
 	em.add_field(name = "사잽아 <문자열> 잊어줘", value = text)
+	return em
+
+def help_trans(em):
+	text="\"사잽아 <문자열> 번역해줘\"를 통해 다른 언어의 문장을 한글로 번역합니다.\n"
+	text+="\"사잽아 <언어코드>로 <문자열> 번역해줘\"를 통해 결과물의 언어를 지정할 수 있습니다.\n"
+	text+="제대로 번역이 안된다고 한다면, 길이를 줄이면서 하는 것도 좋은 방법입니다."
+	em.add_field(name = "기본", value = text)
+	text = "**한국어/한글, 일본어/일어, 중국어, 대만어, 영어**는 언어코드 대신 사용할 수 있습니다. 다른 경우에는 대부분 ISO 639-1 체계에 따릅니다.\n"
+	text+= "아래 주소에서 언어코드를 확인하세요.\nhttps://cloud.google.com/translate/docs/languages"
+	em.add_field(name = "언어코드", value = text)
 	return em
 
 def help_etc(em):

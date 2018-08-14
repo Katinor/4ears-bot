@@ -10,6 +10,7 @@ import quadra_nsfw_module as nsfw_m
 from quadra_log_module import log_append
 from quadra_admin_command import admin_command
 from quadra_version import version, credit_view, tou_view
+from googletrans import Translator
 
 bot_token = quadra_config.BOT_TOKEN
 bot = commands.Bot(description="사잽아 도와줘 라고 말해주면 알려줄게!", command_prefix="")
@@ -867,6 +868,41 @@ async def memo_check(msg,user):
 			em = discord.Embed(title=target+"번 메모",description=temp_swt, colour=discord.Colour.blue())
 			await bot.send_message(msg.channel,text,embed=em)
 
+async def quadra_trans(msg,user,perm):
+	chat_id = msg.channel.id
+	log_append(chat_id, str(msg.content), "trans",0)
+	target = re.search('^사잽아 (?:((?:(?!로).)*)로 )?((?:(?! 번역해줘).)*) 번역해줘', str(msg.content))
+	target = target.groups()
+
+	translator = Translator()
+
+	lang_dest = "ko"
+
+	if target[0] in quadra_search_list.lang_list.keys():
+		lang_dest = quadra_search_list.lang_list[target[0]]
+	elif target[0]:
+		lang_dest = target[0]
+	try:
+		asw = translator.translate(target[1],dest = lang_dest)
+		em = discord.Embed(title="번역결과",description=asw.text, colour=discord.Colour.blue())
+		if not(asw.dest == 'ko' or asw.dest == 'en'): em.add_field(name="발음", value=asw.pronunciation, inline=False)
+		em.add_field(name="원문", value=asw.origin, inline=False)
+		em.add_field(name="시작언어", value=asw.src, inline=True)
+		em.add_field(name="결과언어", value=asw.dest, inline=True)
+		text = mention_user(user.user_id)+", 번역을 마쳤어!"
+		log_append(chat_id, "Success! : "+asw.text, "trans",0)
+		await bot.send_message(msg.channel,text,embed=em)
+		return 0
+	except Exception as ex:
+		if ex == ValueError:
+			log_append(chat_id, "Cannot understand dest language.", "trans",0)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", 어느 언어로 번역할지 제대로 이해못했어!")
+			return 0
+		else:
+			log_append(chat_id, "Unknown Error : "+str(ex), "trans",0)
+			await bot.send_message(msg.channel,mention_user(user.user_id)+", 미안해! 번역이 잘 안돼..")
+			return 0
+
 async def general_system(msg,user,perm):
 	while(True):
 		if msg.content == "사잽아 도와줘":
@@ -931,6 +967,10 @@ async def general_system(msg,user,perm):
 			re_target = re.search('^사잽아 (?:((?:(?!에서).)*)에서 )?((?:(?! 찾아줘).)*) 찾아줘',msg.content)
 			if re_target:
 				await searching(msg,user,perm)
+				break
+			re_target = re.search('^사잽아 (?:((?:(?!로).)*)로 )?((?:(?! 번역해줘).)*) 번역해줘',msg.content)
+			if re_target:
+				await quadra_trans(msg,user,perm)
 				break
 			re_target = re.search('^사잽아 ((?:(?! 기억해줘).)*) 기억해줘',msg.content)
 			if re_target:

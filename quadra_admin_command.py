@@ -123,18 +123,24 @@ async def admin_notice(msg,bot):
 	
 	dup_num = 0
 	suc_num = 0
+	err_num = 0
 
 	log_append("notice_module", "file checked, start to send", "adm","notice")
 	for i in temp_strarr:
 		if i[2] == "Saved":
-			await bot.send_message(i[1],target_str)
-			log_append("notice_module", i[1].name+"#"+i[1].discriminator+" : "+i[0], "adm","notice")
-			suc_num += 1
+			try:
+				await bot.send_message(i[1],target_str)
+				log_append("notice_module", i[1].name+"#"+i[1].discriminator+" : "+i[0], "adm","notice")
+				suc_num += 1
+			except Exception as ex:
+				log_append("notice_module", i[1].name+"#"+i[1].discriminator+" : "+i[0]+" :: "+str(ex), "adm","notice")
+				await bot.send_message(msg.author,"[ERROR]"+i[1].name+"#"+i[1].discriminator+" : "+i[0]+" :: "+str(ex))
+				err_num += 1
 		else:
 			log_append("notice_module", i[1].name+"#"+i[1].discriminator+" : "+i[0]+" (duplicated)", "adm","notice")
 			dup_num += 1
 	log_append("notice_module", "success : "+str(suc_num)+" success, "+str(dup_num)+" dups", "adm","notice")
-	await bot.send_message(msg.author,str(suc_num)+"명에게 보냈어! "+str(dup_num)+"명은 다른 서버도 소유하고 있었어.")
+	await bot.send_message(msg.author,str(suc_num)+"명에게 보냈어! "+str(dup_num)+"명은 다른 서버도 소유하고 있었어. "+str(err_num)+"명은 에러가 발생했어.")
 	return 0
 
 async def admin_command(msg, user, channel_perm, user_perm, bot):

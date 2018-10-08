@@ -873,7 +873,6 @@ async def quadra_trans(msg,user,perm):
 	log_append(chat_id, str(msg.content), "trans",0)
 	target = re.search('^사잽아 (?:((?:(?!로).)*)로 )?((?:(?! 번역해줘).)*) 번역해줘', str(msg.content))
 	target = target.groups()
-
 	translator = Translator()
 
 	lang_dest = "ko"

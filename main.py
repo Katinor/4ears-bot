@@ -1104,15 +1104,15 @@ async def on_message(msg):
 	global server_sem
 	global user_sem
 	perm_rank = 0
-	if msg.server.id in server_sem:
-		return	
-	server_sem.append(msg.server.id)
-	try:
+	if msg.server:
+		if msg.server.id in server_sem:
+			return
+		else: server_sem.append(msg.server.id)
 		perm_class = server_permission(msg.server.id)
 		if perm_class.perm_check("nsfw",msg.channel.id): perm_rank = 2
 		elif perm_class.perm_check("basic",msg.channel.id): perm_rank = 1
 		else: perm_rank = 0
-	except Exception:
+	else:
 		perm_rank = 1
 
 	if msg.author.id in user_sem:
@@ -1141,7 +1141,8 @@ async def on_message(msg):
 			if rand_int < 1:
 				log_append(msg.channel.id,"bot msg triggered","system",0)
 				await bot.send_message(msg.channel,msg.author.name+"랑만 놀지말고 나랑도 놀아줘!")
-	server_sem.remove(msg.server.id)
+	if msg.server:
+		server_sem.remove(msg.server.id)
 	user_sem.remove(msg.author.id)
 
 bot.run(bot_token)

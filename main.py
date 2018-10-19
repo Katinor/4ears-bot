@@ -15,6 +15,8 @@ from googletrans import Translator
 bot_token = quadra_config.BOT_TOKEN
 bot = commands.Bot(description="사잽아 도와줘 라고 말해주면 알려줄게!", command_prefix="")
 user_perm = user_permission()
+user_sem = []
+server_sem = []
 
 def onGame(user_id):
 	if quadra_baseball.enable(user_id) : return "야구게임을"
@@ -1099,7 +1101,12 @@ async def on_ready():
 
 @bot.event
 async def on_message(msg):
+	global server_sem
+	global user_sem
 	perm_rank = 0
+	if msg.server.id in server_sem:
+		return	
+	server_sem.append(msg.server.id)
 	try:
 		perm_class = server_permission(msg.server.id)
 		if perm_class.perm_check("nsfw",msg.channel.id): perm_rank = 2
@@ -1107,6 +1114,10 @@ async def on_message(msg):
 		else: perm_rank = 0
 	except Exception:
 		perm_rank = 1
+
+	if msg.author.id in user_sem:
+		return
+	user_sem.append(msg.author.id)
 
 	if msg.author.bot == False :
 		said_user = quadra_user(msg.author.id)
@@ -1127,8 +1138,10 @@ async def on_message(msg):
 			log_append(msg.channel.id,msg.author.name+"#"+str(msg.author.discriminator)+" ("+str(msg.author.id)+" ) is bot. remained userdata has been deleted.","system",0)
 		if int(msg.author.id) != 423338258055823360 and perm_rank > 0 :
 			rand_int = random.randrange(0,100)
-			if rand_int < 2:
+			if rand_int < 1:
 				log_append(msg.channel.id,"bot msg triggered","system",0)
 				await bot.send_message(msg.channel,msg.author.name+"랑만 놀지말고 나랑도 놀아줘!")
+	server_sem.remove(msg.server.id)
+	user_sem.remove(msg.author.id)
 
 bot.run(bot_token)

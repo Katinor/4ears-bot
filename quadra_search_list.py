@@ -1,5 +1,5 @@
 search_engine = {
-	'나무위키': 'https://namu.wiki/w/',
+	'나무위키': 'https://namu.wiki/go/',
 	'리브레위키': 'https://librewiki.net/wiki/',
 	'백괴사전': 'https://uncyclopedia.kr/wiki/',
 	'위키백과': 'https://ko.wikipedia.org/wiki/',

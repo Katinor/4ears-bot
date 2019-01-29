@@ -233,6 +233,7 @@ class quadra_user:
 				exp_inc += int(ratio * temp_len)
 				break
 		exp_inc = int(exp_inc * (1 + (0.05*(l_lv-3))))
+		if msg_len < 10: exp_inc = 0
 		self.mody(exp = exp_inc)
 
 	def lifetime_enable(self, time_var):

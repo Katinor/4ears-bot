@@ -29,12 +29,12 @@ def mention_user(user_id):
 
 def url_encode(data):
 	return (parse.quote(data).replace('/', '%2F'))
-	
+
 async def lifetime(msg,user):
 	chat_id = msg.channel.id
 	now = log_append(chat_id, str(msg.content), "lifetime",0)
 	dup_num = user.lifetime_enable(now)
-	if dup_num[0] < 6:
+	if dup_num[0] < 3:
 		user.mody(love = 1,love_time = True, exp = 5, exp_time = True)
 		text = mention_user(user.user_id)+" "+quadra_lifetime.checkSwitch(now)
 		await bot.send_message(msg.channel,text)
